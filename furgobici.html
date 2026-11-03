@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Furgobici · Taller de bicis a domicilio</title>
+<link rel="manifest" href="manifest.json"><link rel="icon" href="icon.svg">
+<meta name="theme-color" content="#0f766e">
+<style>
+:root{--c:#0f766e;--bg:#f4f7f6;--t:#16302d}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,sans-serif;background:var(--bg);color:var(--t)}
+header{background:var(--c);color:#fff;padding:14px 16px;font-weight:700;font-size:20px}
+nav{display:flex;background:#fff;border-bottom:1px solid #d5e0de}
+nav button{flex:1;padding:12px;border:0;background:none;font-size:15px;cursor:pointer}
+nav button.on{border-bottom:3px solid var(--c);font-weight:700;color:var(--c)}
+main{max-width:640px;margin:auto;padding:14px}
+.card{background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px #0001}
+label{display:block;margin:10px 0 4px;font-size:13px;font-weight:600}
+input,select,textarea{width:100%;padding:10px;border:1px solid #bcccc9;border-radius:8px;font-size:15px;margin-top:4px}
+input[type=checkbox]{width:auto}
+.btn{background:var(--c);color:#fff;border:0;padding:12px;border-radius:8px;width:100%;font-size:16px;margin-top:14px;cursor:pointer}
+.btn:disabled{opacity:.5}.btn.s{width:auto;padding:6px 10px;font-size:13px;margin:4px 4px 0 0;display:inline-block;text-decoration:none}
+.btn.r{background:#b91c1c}.btn.g{background:#fff;color:var(--c);border:1px solid var(--c)}
+.slots{display:flex;flex-wrap:wrap;gap:6px}.slot{padding:8px 12px;border:1px solid var(--c);border-radius:20px;cursor:pointer}
+.slot.on{background:var(--c);color:#fff}.slot.x{opacity:.35;pointer-events:none;text-decoration:line-through}
+.tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:12px;background:#e0efed}
+.hide{display:none}small{color:#587}.ok{color:#0a6b2c}.err{color:#b91c1c}.star{color:#d97706}
+.tabs{display:flex;gap:6px;margin-top:8px}.tabs button{flex:1;padding:8px;border:1px solid var(--c);background:#fff;color:var(--c);border-radius:8px;cursor:pointer}.tabs button.on{background:var(--c);color:#fff}
+#demo{background:#fff3cd;padding:6px 12px;font-size:13px;text-align:center}
+</style></head><body>
+<header>🚐🚲 Furgobici <small style="color:#cfe">taller de bicis a domicilio</small></header>
+<div id="demo" class="hide">Modo demo: los datos se guardan solo en este navegador. Configura Supabase (ver furgobici.sql).</div>
+<nav><button data-v="book" class="on">Reservar</button><button data-v="mine">Mis citas</button><button data-v="admin">Taller</button></nav>
+<main>
+<section id="book">
+ <div class="card"><label for="ckind">Tipo de cliente</label><select id="ckind"><option value="particular">Particular</option><option value="empresa">Empresa / club / evento (varias bicis)</option></select>
+ <div id="empbox" class="hide"><label for="company">Empresa o evento</label><input id="company"><label for="bikes">Nº de bicis (2–16)</label><input id="bikes" type="number" min="2" max="16" value="4"><small id="empinfo"></small></div>
+ <label for="svc">Servicio</label><select id="svc"></select><small id="svcd"></small>
+ <div id="destbox" class="hide"><label for="dest">Dirección de destino (traslado)</label><input id="dest" placeholder="Calle, nº, municipio"></div>
+ <label for="type">Tipo de bici</label><select id="type"><option>Urbana</option><option>Montaña (MTB)</option><option>Carretera</option><option>Eléctrica</option><option>Gravel</option><option>Otra</option></select>
+ <label for="model">Marca / modelo</label><input id="model">
+ <label for="notes">¿Qué le pasa? (opcional)</label><textarea id="notes" rows="2"></textarea>
+ <label for="photo">Foto del problema (opcional)</label><input type="file" id="photo" accept="image/*"></div>
+ <div class="card"><label for="town">Municipio</label><select id="town"></select>
+ <label for="addr">Dirección</label><input id="addr" placeholder="Calle, nº, piso">
+ <label for="date">Fecha</label><input type="date" id="date"><label>Hora de inicio</label><div class="slots" id="slots"></div></div>
+ <div class="card"><label for="name">Nombre</label><input id="name"><label for="phone">Teléfono</label><input id="phone" type="tel"><label for="email">Email (recomendado: recordatorios)</label><input id="email" type="email">
+ <label for="bono">Código de bono (opcional)</label><input id="bono" autocapitalize="characters"><label for="ref">Código de amigo (opcional, solo clientes nuevos)</label><input id="ref" autocapitalize="characters">
+ <button class="btn" id="send">Reservar cita</button><div id="msg" role="status"></div></div>
+ <div class="card" id="revs"></div>
+</section>
+<section id="mine" class="hide"><div class="card"><label for="qphone">Tu teléfono</label><input id="qphone" type="tel"><label for="qcode">Código de reserva</label><input id="qcode" inputmode="numeric" maxlength="4"><button class="btn" id="qbtn">Ver mis citas</button></div><div id="mylist"></div></section>
+<section id="admin" class="hide">
+ <div class="card" id="login"><label for="aemail">Email</label><input id="aemail" type="email"><label for="apass">Contraseña</label><input id="apass" type="password"><button class="btn" id="loginbtn">Entrar</button><div id="lmsg" class="err"></div></div>
+ <div id="panel" class="hide"></div></section>
+</main>
+<script>
+const CFG={
+ supabaseUrl:"https://pmeixojoagkdobkurqlu.supabase.co",      // https://pmeixojoagkdobkurqlu.supabase.co
+ supabaseKey:"sb_publishable_q5YSORiuaU8ahRcLU9Ulrw_OKeoBKk6",      // sb_publishable_q5YSORiuaU8ahRcLU9Ulrw_OKeoBKk6
+ phone:"34695410977",
+ googleReviewUrl:"",  // enlace de reseñas de Google de Furgobici
+ bikesPerHour:2, groupMin:4, groupDiscount:0.10, refDiscount:5, // valores provisionales: confirmar con Roberto
+ bono:{total:3,price:75},
+ services:[
+  {id:"rev",n:"Revisión y puesta a punto",p:30,d:"Recomendada cada 6 meses"},
+  {id:"int",n:"Servicio integral",p:49,d:"Incluye ajuste de manillar, potencia y dirección"},
+  {id:"rep",n:"Reparación (presupuesto)",p:0,d:"Te enviamos presupuesto tras revisar"},
+  {id:"tras",n:"Traslado de bici",p:0,d:"Recogemos y llevamos tu bici donde necesites (presupuesto)"}],
+ towns:["Bilbao","Getxo","Leioa","Erandio","Sopela","Berango","Barakaldo","Basauri","Galdakao","Mungia","Plentzia","Gorliz","Otro"],
+ outside:["Otro"],
+ hours:{1:[9,19],2:[9,19],3:[9,19],4:[9,19],5:[9,19],6:[9,13]},
+ status:["Pendiente","Confirmada","En camino","Reparando","Terminada","Cancelada"]};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const ymd=d=>{const z=new Date(d.getTime()-d.getTimezoneOffset()*6e4);return z.toISOString().slice(0,10)};
+const normPhone=p=>String(p).replace(/[\s.\-()]/g,"").replace(/^(\+34|0034)/,"");
+const validPhone=p=>/^[6789]\d{8}$/.test(normPhone(p));
+const r2=n=>Math.round(n*100)/100;
+const stars=n=>"★".repeat(n)+"☆".repeat(5-n);
+let tab="agenda",routeDate=ymd(new Date());
+
+/* ===== API: Supabase o modo demo (localStorage) ===== */
+const REMOTE=!!(CFG.supabaseUrl&&CFG.supabaseKey);
+let token=sessionStorage.fbtoken||"";
+async function sb(path,{method="GET",body,auth=false,prefer}={}){
+const h={apikey:CFG.supabaseKey,...(auth&&token?{Authorization:"Bearer "+token}:{}),"Content-Type":"application/json"};
+ if(prefer)h.Prefer=prefer;
+ const r=await fetch(CFG.supabaseUrl+path,{method,headers:h,body:body?JSON.stringify(body):undefined});
+ if(!r.ok){const e=await r.text();const x=new Error(e);x.status=r.status;throw x}
+ const t=await r.text();return t?JSON.parse(t):null}
+const rpc=(f,b)=>sb("/rest/v1/rpc/"+f,{method:"POST",body:b});
+const L={get:()=>JSON.parse(localStorage.fb||"[]"),set:v=>localStorage.fb=JSON.stringify(v),gb:()=>JSON.parse(localStorage.fbb||"[]"),sb:v=>localStorage.fbb=JSON.stringify(v)};
+const refOf=p=>{let h=5381;for(const ch of p+"furgobici")h=((h<<5)+h+ch.charCodeAt(0))>>>0;return h.toString(16).toUpperCase().padStart(8,"0").slice(0,6)};
+const overlap=(a,b)=>a.date==b.date&&a.hour<b.hour+(b.hours||1)&&b.hour<a.hour+(a.hours||1);
+const API=REMOTE?{
+ taken:d=>rpc("taken_slots",{d}),
+ book:async c=>{await sb("/rest/v1/citas",{method:"POST",body:c,prefer:"return=minimal"})},
+ mine:(p,k)=>rpc("my_bookings",{p_phone:p,p_code:k}),
+ cancel:async(id,p,k)=>{await rpc("cancel_booking",{p_id:id,p_phone:p,p_code:k})},
+ bonoLeft:(code,phone)=>rpc("bono_left",{p_code:code,p_phone:phone}),
+ refOk:(ref,phone)=>rpc("ref_ok",{p_ref:ref,p_phone:phone}),
+ myRef:(p,k)=>rpc("my_ref",{p_phone:p,p_code:k}),
+ leaveReview:async(id,p,k,r,t)=>{await rpc("leave_review",{p_id:id,p_phone:p,p_code:k,p_rating:r,p_comment:t})},
+ publicReviews:()=>rpc("public_reviews",{}),
+ login:async(email,password)=>{const r=await fetch(CFG.supabaseUrl+"/auth/v1/token?grant_type=password",{method:"POST",headers:{apikey:CFG.supabaseKey,"Content-Type":"application/json"},body:JSON.stringify({email,password})});
+  if(!r.ok)throw new Error("Credenciales incorrectas");token=(await r.json()).access_token;sessionStorage.fbtoken=token},
+ upload:async d=>{const b=await (await fetch(d)).blob(),path=crypto.randomUUID()+".jpg";
+  const r=await fetch(CFG.supabaseUrl+"/storage/v1/object/fotos/"+path,{method:"POST",headers:{apikey:CFG.supabaseKey,"Content-Type":"image/jpeg"},body:b});
+  if(!r.ok)throw new Error("upload");return path},
+ photoUrl:async p=>{if(!p||p.startsWith("data:"))return p;const r=await sb("/storage/v1/object/sign/fotos/"+p,{method:"POST",body:{expiresIn:3600},auth:true});return CFG.supabaseUrl+"/storage/v1"+r.signedURL},
+ pay:async id=>{const r=await fetch(CFG.supabaseUrl+"/functions/v1/pagar",{method:"POST",headers:{apikey:CFG.supabaseKey,Authorization:"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify({id,origin:location.origin+location.pathname})});
+  if(!r.ok)throw new Error(await r.text());return (await r.json()).url},
+ list:()=>sb("/rest/v1/citas?select=*&order=date.asc,hour.asc",{auth:true}),
+ update:async(id,patch)=>{await sb("/rest/v1/citas?id=eq."+id,{method:"PATCH",body:patch,auth:true,prefer:"return=minimal"})},
+ bonosList:()=>sb("/rest/v1/bonos?select=*&order=created_at.desc",{auth:true}),
+ bonoCreate:async b=>{await sb("/rest/v1/bonos",{method:"POST",body:b,auth:true,prefer:"return=minimal"})},
+ bonoUpdate:async(id,patch)=>{await sb("/rest/v1/bonos?id=eq."+id,{method:"PATCH",body:patch,auth:true,prefer:"return=minimal"})},
+ logout:()=>{token="";delete sessionStorage.fbtoken}
+}:{
+ taken:async d=>L.get().filter(c=>c.date==d&&c.st!="Cancelada").flatMap(c=>Array.from({length:c.hours||1},(_,i)=>c.hour+i)),
+ book:async c=>{const l=L.get();if(l.some(x=>x.st!="Cancelada"&&overlap(x,c))){const e=new Error("23P01");e.status=409;throw e}
+  const ref=c.ref_code?l.find(x=>x.st=="Terminada"&&refOf(x.phone)==c.ref_code.toUpperCase()):null;
+  l.push({...c,ref_by_name:ref?ref.name:null,id:Date.now()});L.set(l)},
+ mine:async(p,k)=>L.get().filter(c=>c.phone==p&&c.code==k),
+ cancel:async(id,p,k)=>L.set(L.get().map(c=>c.id==id&&c.phone==p&&c.code==k?{...c,st:"Cancelada"}:c)),
+ bonoLeft:async(code,phone)=>{const b=L.gb().find(x=>x.code==code.toUpperCase()&&x.phone==phone&&x.paid&&(!x.expires_at||x.expires_at>new Date().toISOString()));return b?b.total-b.used:0},
+ refOk:async(ref,phone)=>{const l=L.get();return l.some(c=>c.st=="Terminada"&&refOf(c.phone)==ref.toUpperCase()&&c.phone!=phone)&&!l.some(c=>c.phone==phone&&c.st!="Cancelada")},
+ myRef:async(p,k)=>L.get().some(c=>c.phone==p&&c.code==k&&c.st=="Terminada")?refOf(p):null,
+ leaveReview:async(id,p,k,r,t)=>L.set(L.get().map(c=>c.id==id&&c.phone==p&&c.code==k&&c.st=="Terminada"&&!c.rating?{...c,rating:r,review:t.slice(0,500)}:c)),
+ publicReviews:async()=>L.get().filter(c=>c.review_public&&c.rating).map(c=>({first_name:c.name.split(" ")[0],rating:c.rating,review:c.review,svc:c.svc,date:c.date})),
+ login:async(e,p)=>{if(p!=="demo")throw new Error("Demo: contraseña 'demo'");sessionStorage.fbtoken="demo";token="demo"},
+ upload:async d=>d,photoUrl:async p=>p,pay:async()=>{throw new Error("Los pagos online requieren Supabase")},
+ list:async()=>L.get().sort((a,b)=>(a.date+String(a.hour).padStart(2,"0")).localeCompare(b.date+String(b.hour).padStart(2,"0"))),
+ update:async(id,patch)=>L.set(L.get().map(c=>{if(c.id!=id)return c;const n={...c,...patch};
+  if(patch.st=="Terminada"&&c.st!="Terminada"){n.completed_at=new Date().toISOString();if(c.bono_code)L.sb(L.gb().map(b=>b.code==c.bono_code.toUpperCase()&&b.used<b.total?{...b,used:b.used+1}:b))}return n})),
+ bonosList:async()=>L.gb(),
+ bonoCreate:async b=>L.sb([{...b,id:Date.now(),used:0,created_at:new Date().toISOString(),expires_at:new Date(Date.now()+365*864e5).toISOString()},...L.gb()]),
+ bonoUpdate:async(id,patch)=>L.sb(L.gb().map(b=>b.id==id?{...b,...patch}:b)),
+ logout:()=>{token="";delete sessionStorage.fbtoken}};
+if(!REMOTE)$("#demo").classList.remove("hide");
+
+/* ===== Reserva ===== */
+$("#svc").innerHTML=CFG.services.map(s=>`<option value="${s.id}">${esc(s.n)}${s.p?" – "+s.p+" €":""}</option>`).join("");
+$("#town").innerHTML=CFG.towns.map(t=>`<option>${esc(t)}</option>`).join("");
+const svcSel=()=>CFG.services.find(x=>x.id==$("#svc").value);
+const isEmp=()=>$("#ckind").value=="empresa";
+const nBikes=()=>isEmp()?Math.min(16,Math.max(2,Math.round(+$("#bikes").value||2))):1;
+const need=()=>isEmp()?Math.ceil(nBikes()/CFG.bikesPerHour):1;
+const calcAmount=()=>{const n=nBikes();let a=svcSel().p*n;if(isEmp()&&n>=CFG.groupMin)a*=1-CFG.groupDiscount;return r2(a)};
+function refresh(){const s=svcSel();$("#svcd").textContent=s.d;$("#destbox").classList.toggle("hide",s.id!="tras");$("#empbox").classList.toggle("hide",!isEmp());
+ if(isEmp()){const a=calcAmount();$("#empinfo").textContent=`Duración estimada: ${need()} h${a?` · Total aprox.: ${a} €`:""}${nBikes()>=CFG.groupMin?` (incluye ${CFG.groupDiscount*100}% dto. de grupo)`:""}`}
+ slots()}
+$("#svc").onchange=refresh;$("#ckind").onchange=refresh;$("#bikes").onchange=refresh;
+$("#date").min=ymd(new Date());$("#date").value=ymd(new Date());
+let hour=null;
+async function slots(){hour=null;const dv=$("#date").value,box=$("#slots");
+ if(!dv){box.innerHTML="";return}
+ const h=CFG.hours[new Date(dv+"T00:00").getDay()];
+ if(!h){box.innerHTML="<small>Domingo cerrado</small>";return}
+ box.innerHTML="<small>Cargando…</small>";
+ let taken=[];try{taken=await API.taken(dv)}catch(e){box.innerHTML='<small class="err">No se pudo cargar la disponibilidad.</small>';return}
+ const now=new Date(),isToday=dv==ymd(now),n=need();let o="",any=false;
+ for(let i=h[0];i<h[1];i++){let bad=isToday&&i<=now.getHours()||i+n>h[1];for(let j=i;j<i+n&&!bad;j++)if(taken.includes(j))bad=true;
+  if(!bad)any=true;o+=`<span class="slot ${bad?"x":""}" data-h="${i}">${i}:00</span>`}
+ box.innerHTML=o+(any?"":"<br><small>No hay hueco suficiente ese día. Prueba otra fecha o llámanos.</small>");
+ box.querySelectorAll(".slot").forEach(e=>e.onclick=()=>{box.querySelectorAll(".slot").forEach(x=>x.classList.remove("on"));e.classList.add("on");hour=+e.dataset.h})}
+$("#date").onchange=slots;refresh();
+const fileData=f=>new Promise(r=>{if(!f)return r("");const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{const c=document.createElement("canvas"),k=Math.min(1,500/im.width);c.width=im.width*k;c.height=im.height*k;c.getContext("2d").drawImage(im,0,0,c.width,c.height);r(c.toDataURL("image/jpeg",.6))};im.onerror=()=>r("");im.src=fr.result};fr.onerror=()=>r("");fr.readAsDataURL(f)});
+$("#send").onclick=async()=>{const m=$("#msg"),b=$("#send"),g=id=>$("#"+id).value.trim(),err=t=>{m.className="err";m.textContent=t};m.className="";m.textContent="";
+ const s=svcSel(),emp=isEmp();
+ if(CFG.outside.includes(g("town")))return err("Esa zona queda fuera de cobertura. Llámanos al 695 410 977.");
+ if(!g("name")||!g("addr")||hour===null||!g("date"))return err("Completa nombre, dirección, fecha y hora.");
+ if(emp&&!g("company"))return err("Indica el nombre de la empresa o evento.");
+ if(s.id=="tras"&&!g("dest"))return err("Indica la dirección de destino del traslado.");
+ if(!validPhone(g("phone")))return err("Teléfono no válido (9 dígitos).");
+ if(g("email")&&!$("#email").checkValidity())return err("Email no válido.");
+ const phone=normPhone(g("phone")),bono=g("bono").toUpperCase(),ref=g("ref").toUpperCase();
+ b.disabled=true;
+ try{
+  let amount=calcAmount();
+  if(bono){if(emp||!((await API.bonoLeft(bono,phone))>0)){b.disabled=false;return err(emp?"Los bonos son para particulares.":"Bono no válido, sin revisiones o sin pagar (debe coincidir con tu teléfono).")}amount=0}
+  else if(ref){if(!(await API.refOk(ref,phone))){b.disabled=false;return err("Código de amigo no válido (solo para clientes nuevos).")}amount=Math.max(0,r2(amount-CFG.refDiscount))}
+  let photo=await fileData($("#photo").files[0]);if(photo&&REMOTE){try{photo=await API.upload(photo)}catch(e){photo=""}}
+  const code=String(1000+crypto.getRandomValues(new Uint32Array(1))[0]%9000);
+  const c={svc:s.n,price:s.p,amount,type:g("type"),model:g("model"),notes:g("notes"),photo,town:g("town"),addr:g("addr"),date:g("date"),hour,hours:need(),bikes:nBikes(),kind:s.id=="tras"?"traslado":emp?"empresa":"domicilio",company:emp?g("company"):"",dest:s.id=="tras"?g("dest"):"",bono_code:bono||null,ref_code:ref&&!bono?ref:null,name:g("name"),phone,email:g("email"),code,st:"Pendiente",parts:"",paid:false};
+  await API.book(c);
+  const t=encodeURIComponent(`Hola, soy ${c.name}. Reserva Furgobici: ${c.svc}${emp?" ("+c.bikes+" bicis, "+c.company+")":""}, ${c.date} ${c.hour}:00, ${c.addr} (${c.town}).`);
+  m.className="ok";m.innerHTML=`✅ Cita registrada. Tu código para consultar o cancelar: <b>${esc(code)}</b> (guárdalo). <a href="https://wa.me/${CFG.phone}?text=${t}" target="_blank" rel="noopener">Confirmar por WhatsApp</a>`;
+ }catch(e){err((e.status==409||/23505|23P01|conflicting|exclusion/.test(e.message))?"Esa hora acaba de ocuparse. Elige otra.":"No se pudo guardar la cita. Inténtalo de nuevo o llama al 695 410 977.")}
+ b.disabled=false;slots()};
+
+async function loadReviews(){try{const r=await API.publicReviews();
+ if(!r||!r.length){$("#revs").classList.add("hide");return}
+ const avg=r.reduce((a,x)=>a+x.rating,0)/r.length;
+ $("#revs").innerHTML=`<b>Opiniones</b> <span class="star">${stars(Math.round(avg))}</span> <small>${avg.toFixed(1)} · ${r.length} reseñas</small>`+r.slice(0,5).map(x=>`<p><span class="star">${stars(x.rating)}</span> <b>${esc(x.first_name)}</b><br><small>${esc(x.review)}</small></p>`).join("")+(CFG.googleReviewUrl?`<a class="btn s g" href="${esc(CFG.googleReviewUrl)}" target="_blank" rel="noopener">Ver y dejar reseña en Google</a>`:"");
+ $("#revs").classList.remove("hide")}catch(e){$("#revs").classList.add("hide")}}
+loadReviews();
+
+/* ===== Mis citas ===== */
+const fmt=c=>`<b>${esc(c.date)} ${esc(c.hour)}:00${c.hours>1?"–"+(c.hour+c.hours)+":00":""}</b> <span class="tag">${esc(c.st)}</span>${c.kind=="empresa"?` <span class="tag">${esc(c.bikes)} bicis</span>`:""}<br>${esc(c.svc)} · ${esc(c.type)} ${esc(c.model)}<br><small>${esc(c.addr)}, ${esc(c.town)}</small>${c.parts?`<br><small>Piezas/presupuesto: ${esc(c.parts)}</small>`:""}`;
+async function loadMine(){const p=normPhone($("#qphone").value),k=$("#qcode").value.trim();
+ try{const l=await API.mine(p,k),box=$("#mylist");
+  box.innerHTML=l.map(c=>`<div class="card">${fmt(c)}${["Pendiente","Confirmada"].includes(c.st)?`<br><button class="btn s r" data-id="${esc(c.id)}">Cancelar</button>`:""}
+   ${c.st=="Terminada"&&!c.rating?`<div data-rvbox="${esc(c.id)}"><label>Valora el servicio</label><select class="rs">${[5,4,3,2,1].map(n=>`<option value="${n}">${stars(n)}</option>`).join("")}</select><input class="rt" maxlength="500" placeholder="Tu opinión (opcional)"><button class="btn s" data-rv="${esc(c.id)}">Enviar valoración</button></div>`:c.rating?`<br><span class="star">${stars(c.rating)}</span> <small>Gracias por tu valoración</small>`:""}</div>`).join("")||"<small>Sin citas con esos datos.</small>";
+  if(l.some(c=>c.st=="Terminada")){box.innerHTML+=`<div class="card"><b>Historial</b><br><small>Próxima revisión recomendada: 6 meses después de tu última cita terminada.</small></div>`;
+   const ref=await API.myRef(p,k);if(ref)box.innerHTML+=`<div class="card"><b>🎁 Tu código de amigo: ${esc(ref)}</b><br><small>Si un amigo nuevo lo usa en su primera reserva, se lleva ${CFG.refDiscount} € de descuento.</small></div>`}
+  box.querySelectorAll("[data-id]").forEach(b=>b.onclick=async()=>{if(!confirm("¿Cancelar esta cita?"))return;await API.cancel(b.dataset.id,p,k);loadMine();slots()});
+  box.querySelectorAll("[data-rv]").forEach(b=>b.onclick=async()=>{const bx=b.closest("[data-rvbox]");b.disabled=true;await API.leaveReview(b.dataset.rv,p,k,+bx.querySelector(".rs").value,bx.querySelector(".rt").value);loadMine()});
+ }catch(e){$("#mylist").innerHTML='<small class="err">Error al consultar.</small>'}}
+$("#qbtn").onclick=loadMine;
+
+/* ===== Taller ===== */
+async function enter(){$("#login").classList.add("hide");$("#panel").classList.remove("hide");render()}
+$("#loginbtn").onclick=async()=>{try{await API.login($("#aemail").value.trim(),$("#apass").value);enter()}catch(e){$("#lmsg").textContent=e.message}};
+if(token&&(REMOTE||token=="demo"))enter();
+
+function routeCard(l){const r=l.filter(c=>c.date==routeDate&&c.st!="Cancelada").sort((a,b)=>a.hour-b.hour);
+ let h=`<div class="card"><b>Ruta del día</b><input type="date" id="rdate" value="${routeDate}">`;
+ if(!r.length)return h+"<small>Sin citas ese día.</small></div>";
+ h+="<ol>"+r.map((c,i)=>`<li>${c.hour}:00 · ${esc(c.town)} · ${esc(c.addr)}${c.dest?" → "+esc(c.dest):""}${i&&r[i-1].town!=c.town?' <span class="tag">cambio de zona</span>':""}</li>`).join("")+"</ol>";
+ const pts=r.flatMap(c=>c.dest?[c.addr+", "+c.town,c.dest]:[c.addr+", "+c.town]).map(a=>encodeURIComponent(a+", España")),dest=pts.pop();
+ const url="https://www.google.com/maps/dir/?api=1&travelmode=driving&destination="+dest+(pts.length?"&waypoints="+pts.slice(0,9).join("%7C"):"");
+ return h+`<a class="btn s" href="${url}" target="_blank" rel="noopener">Abrir ruta en Google Maps</a>${pts.length>9?"<br><small>Google Maps admite 10 paradas; se omiten las intermedias sobrantes.</small>":""}</div>`}
+
+const bars=(o,f=v=>v,sort=true)=>{let e=Object.entries(o);if(sort)e.sort((a,b)=>b[1]-a[1]);if(!e.length)return"<small>Sin datos.</small>";const m=Math.max(...e.map(x=>x[1]))||1;
+ return e.map(([k,v])=>`<div style="margin:4px 0"><small>${esc(k)} · ${esc(f(v))}</small><div style="background:#d5e8e5;border-radius:4px"><div style="background:var(--c);height:10px;border-radius:4px;width:${Math.max(2,v/m*100)}%"></div></div></div>`).join("")};
+const count=(arr,f)=>arr.reduce((o,x)=>{const k=f(x);if(k)o[k]=(o[k]||0)+1;return o},{});
+function statsHtml(l,b){
+ const act=l.filter(c=>c.st!="Cancelada"),paid=l.filter(c=>c.paid),canc=l.filter(c=>c.st=="Cancelada");
+ const months={};for(let i=5;i>=0;i--){const d=new Date();d.setDate(1);d.setMonth(d.getMonth()-i);months[d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")]=0}
+ paid.forEach(c=>{const k=c.date.slice(0,7);if(k in months)months[k]+=Number(c.amount||0)});
+ const tot=paid.reduce((a,c)=>a+Number(c.amount||0),0),phones=count(act,c=>c.phone),uniq=Object.keys(phones).length,rec=Object.values(phones).filter(n=>n>1).length;
+ const rated=l.filter(c=>c.rating),avg=rated.length?rated.reduce((a,c)=>a+c.rating,0)/rated.length:0;
+ const refs=count(l,c=>c.ref_by_name),bp=b.filter(x=>x.paid);
+ const kinds=count(act,c=>c.kind);
+ return `<div class="card"><b>Ingresos por mes (cobrado)</b>${bars(months,v=>r2(v)+" €",false)}<small>Total cobrado en citas: ${r2(tot)} € · Ticket medio: ${paid.length?r2(tot/paid.length):0} €</small></div>
+ <div class="card"><b>Servicios más pedidos</b>${bars(count(act,c=>c.svc))}</div>
+ <div class="card"><b>Demanda por zona</b>${bars(count(act,c=>c.town))}</div>
+ <div class="card"><b>Clientes y calidad</b><br>Clientes únicos: ${uniq} · Recurrentes: ${rec} (${uniq?Math.round(rec/uniq*100):0}%)<br>Tasa de cancelación: ${l.length?Math.round(canc.length/l.length*100):0}%<br>Valoración media: ${rated.length?`<span class="star">${stars(Math.round(avg))}</span> ${avg.toFixed(1)} (${rated.length})`:"sin valoraciones"}<br>Empresa/evento: ${kinds.empresa||0} · Traslados: ${kinds.traslado||0}</div>
+ <div class="card"><b>Referidos</b>${Object.keys(refs).length?bars(refs,v=>v+" cita(s)"):"<small>Aún no hay referidos.</small>"}<small>Recompensa para quien recomienda: gestiónala a mano (descuento en su siguiente servicio).</small></div>
+ <div class="card"><b>Bonos</b><br>Vendidos (pagados): ${bp.length} · Ingresos: ${r2(bp.reduce((a,x)=>a+Number(x.price||0),0))} € · Revisiones pendientes de usar: ${bp.reduce((a,x)=>a+x.total-x.used,0)}</div>`}
+function bonosHtml(b){const rand=()=>Array.from(crypto.getRandomValues(new Uint8Array(6)),n=>"ABCDEFGHJKMNPQRSTUVWXYZ23456789"[n%31]).join("");
+ return `<div class="card"><b>Nuevo bono</b><label for="bn_name">Nombre</label><input id="bn_name"><label for="bn_phone">Teléfono</label><input id="bn_phone" type="tel"><label for="bn_email">Email</label><input id="bn_email" type="email">
+ <label for="bn_total">Nº de revisiones</label><input id="bn_total" type="number" min="1" value="${CFG.bono.total}"><label for="bn_price">Precio (€)</label><input id="bn_price" type="number" min="0" step="0.5" value="${CFG.bono.price}">
+ <label><input type="checkbox" id="bn_paid"> Ya pagado</label><button class="btn" id="bn_add">Crear bono</button><small id="bn_msg"></small></div>`+
+ b.map(x=>`<div class="card"><b>${esc(x.code)}</b> <span class="tag">${esc(x.used)}/${esc(x.total)} usadas</span> ${x.paid?'<span class="tag">pagado</span>':'<span class="tag">sin pagar</span>'}<br>${esc(x.name)} · ${esc(x.phone)} · ${esc(x.price)} €<br><small>Caduca: ${esc((x.expires_at||"").slice(0,10))}</small><br>
+ <label><input type="checkbox" data-bk="${esc(x.id)}" ${x.paid?"checked":""}> Pagado</label>
+ <a class="btn s" target="_blank" rel="noopener" href="https://wa.me/34${esc(x.phone)}?text=${encodeURIComponent(`Hola ${x.name}, tu bono Furgobici de ${x.total} revisiones: código ${x.code}. Úsalo al reservar con este mismo teléfono.`)}">Enviar código por WhatsApp</a></div>`).join("")||"<small>Sin bonos.</small>"}
+function agendaHtml(l){return routeCard(l)+l.map(c=>`<div class="card" data-id="${esc(c.id)}">${fmt(c)}<br>👤 ${esc(c.name)} · <a href="tel:${esc(c.phone)}">${esc(c.phone)}</a> · <a href="https://www.google.com/maps/search/${encodeURIComponent(c.addr+", "+c.town)}" target="_blank" rel="noopener">Mapa</a>
+ ${c.kind=="empresa"?`<br>🏢 ${esc(c.company)} · ${esc(c.bikes)} bicis · ${esc(c.hours)} h`:""}${c.dest?`<br>➡️ Destino: ${esc(c.dest)}`:""}${c.bono_code?`<br>🎟️ Bono ${esc(c.bono_code)}`:""}${c.ref_by_name?`<br>🎁 Recomendado por ${esc(c.ref_by_name)}`:""}
+ ${c.notes?`<br>📝 ${esc(c.notes)}`:""}${c.photo?`<br><img data-photo="${esc(c.photo)}" width="120" alt="foto del problema">`:""}
+ ${c.rating?`<br><span class="star">${stars(c.rating)}</span> ${esc(c.review)} <label><input type="checkbox" data-k="review_public" ${c.review_public?"checked":""}> Publicar reseña</label>`:""}
+ <select data-k="st">${CFG.status.map(s=>`<option ${s==c.st?"selected":""}>${esc(s)}</option>`).join("")}</select>
+ <input data-k="parts" placeholder="Piezas / presupuesto" value="${esc(c.parts)}">
+ <input data-k="amount" type="number" min="0" step="0.5" placeholder="Importe final €" value="${esc(c.amount)}">
+ <select data-k="pay_method">${["","Efectivo","Bizum","Tarjeta"].map(s=>`<option value="${s}" ${s==(c.pay_method||"")?"selected":""}>${s||"Método de pago…"}</option>`).join("")}</select>
+ <label><input type="checkbox" data-k="paid" ${c.paid?"checked":""}> Pagado</label>
+ ${c.paid?"":`<button class="btn s" data-pay="${esc(c.id)}">Cobrar online</button>`}
+ <a class="btn s" target="_blank" rel="noopener" href="https://wa.me/34${esc(c.phone)}?text=${encodeURIComponent(`Hola ${c.name}, tu cita Furgobici (${c.date} ${c.hour}:00) está: ${c.st}.`)}">Avisar por WhatsApp</a></div>`).join("")}
+async function render(){let l,b;try{[l,b]=await Promise.all([API.list(),API.bonosList()])}catch(e){API.logout();$("#panel").classList.add("hide");$("#login").classList.remove("hide");$("#lmsg").textContent="Sesión caducada. Entra de nuevo.";return}
+ const inc=l.filter(c=>c.st=="Terminada"&&c.paid).reduce((a,c)=>a+Number(c.amount??c.price??0),0);
+ const head=`<div class="card"><b>Resumen</b><br>Citas: ${l.length} · Pendientes: ${l.filter(c=>c.st=="Pendiente").length} · Cobrado: ${r2(inc)} €<br>
+  <div class="tabs">${[["agenda","Agenda"],["bonos","Bonos"],["stats","Estadísticas"]].map(([k,n])=>`<button data-tab="${k}" class="${tab==k?"on":""}">${n}</button>`).join("")}</div><button class="btn s" id="out">Salir</button></div>`;
+ $("#panel").innerHTML=head+(tab=="agenda"?agendaHtml(l):tab=="bonos"?bonosHtml(b):statsHtml(l,b));
+ const P=$("#panel");
+ $("#out").onclick=()=>{API.logout();location.reload()};
+ P.querySelectorAll("[data-tab]").forEach(x=>x.onclick=()=>{tab=x.dataset.tab;render()});
+ const rd=$("#rdate");if(rd)rd.onchange=e=>{routeDate=e.target.value||routeDate;render()};
+ P.querySelectorAll("img[data-photo]").forEach(async i=>{try{const u=await API.photoUrl(i.dataset.photo);if(/^(https:|data:image\/jpeg)/.test(u))i.src=u}catch(e){}});
+ P.querySelectorAll("[data-pay]").forEach(x=>x.onclick=async()=>{x.disabled=true;
+  try{const url=await API.pay(x.dataset.pay),c=l.find(y=>String(y.id)==x.dataset.pay);
+   window.open("https://wa.me/34"+c.phone+"?text="+encodeURIComponent(`Hola ${c.name}, aquí tienes el enlace de pago de tu servicio Furgobici (${c.amount} €): ${url}`),"_blank","noopener")}
+  catch(e){alert("No se pudo crear el cobro: "+e.message)}x.disabled=false});
+ P.querySelectorAll("[data-k]").forEach(e=>e.onchange=async()=>{const id=e.closest(".card").dataset.id,k=e.dataset.k;
+  await API.update(id,{[k]:e.type=="checkbox"?e.checked:e.type=="number"?Number(e.value):e.value});render();slots();loadReviews()});
+ P.querySelectorAll("[data-bk]").forEach(e=>e.onchange=async()=>{await API.bonoUpdate(e.dataset.bk,{paid:e.checked});render()});
+ const add=$("#bn_add");if(add)add.onclick=async()=>{const g=i=>$("#"+i).value.trim(),m=$("#bn_msg");
+  if(!g("bn_name")||!validPhone(g("bn_phone")))return m.textContent="Nombre y teléfono (9 dígitos) obligatorios.";
+  try{await API.bonoCreate({code:rand(),name:g("bn_name"),phone:normPhone(g("bn_phone")),email:g("bn_email"),total:Math.max(1,+g("bn_total")||1),price:+g("bn_price")||0,paid:$("#bn_paid").checked});render()}catch(e){m.textContent="No se pudo crear el bono."}}}
+
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("on",x==b));["book","mine","admin"].forEach(v=>$("#"+v).classList.toggle("hide",v!=b.dataset.v))});
+if("serviceWorker"in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+<script src="zonas.js"></script>
+</body></html>
