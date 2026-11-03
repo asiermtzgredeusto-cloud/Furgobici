@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Furgobici Taller</title>
+<link rel="manifest" href="taller.webmanifest"><link rel="icon" href="taller-icon.svg">
+<meta name="theme-color" content="#0f766e">
+<style>
+:root{--c:#0f766e;--bg:#f4f7f6;--t:#16302d}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,sans-serif;background:var(--bg);color:var(--t);font-size:16px}
+header{background:var(--c);color:#fff;padding:12px 16px;font-weight:700;font-size:19px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:6}
+header button{background:none;border:0;color:#fff;opacity:.55;font-size:20px;cursor:pointer}
+#nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#fff;border-top:1px solid #d5e0de;z-index:6}
+#nav button{flex:1;padding:8px 2px 10px;border:0;background:none;font-size:11px;cursor:pointer;color:#587}
+#nav button span{display:block;font-size:22px}#nav button.on{color:var(--c);font-weight:700}
+main{max-width:720px;margin:auto;padding:12px 12px 90px}
+.card{background:#fff;border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px #0001}
+h3{margin:2px 0 8px;font-size:17px}h4{margin:10px 0 4px}label{display:block;margin:8px 0 2px;font-size:12px;font-weight:600}
+input,select,textarea{width:100%;padding:11px;border:1px solid #bcccc9;border-radius:10px;font-size:16px;background:#fff}
+input[type=checkbox]{width:auto}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>*{flex:1;min-width:90px}.row>.f0{flex:0 0 auto;min-width:0}
+.btn{background:var(--c);color:#fff;border:0;padding:11px 14px;border-radius:10px;font-size:15px;cursor:pointer;margin:4px 4px 0 0}
+.btn.g{background:#fff;color:var(--c);border:1px solid var(--c)}.btn.r{background:#b91c1c}.btn.big{width:100%;padding:15px;font-size:18px;font-weight:700}.btn.s{padding:6px 10px;font-size:13px}
+.chip{background:#e0efed;border:0;border-radius:20px;padding:9px 13px;margin:3px 3px 0 0;font-size:14px;cursor:pointer;color:var(--t)}.chip.on{background:var(--c);color:#fff}
+.tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:12px;background:#e0efed}.tag.o{background:#fde9c7}.tag.d{background:#d9f2dd}.tag.x{background:#fcd9d9}
+small,.muted{color:#587;font-size:12px}.hide{display:none}.err{color:#b91c1c}.ok{color:#0a6b2c}
+.sem{display:flex;gap:4px}.sem button{border:2px solid #ccd;border-radius:20px;background:#fff;font-size:20px;padding:3px 9px;cursor:pointer}.sem button.on{border-color:var(--t);background:#eef}
+.item{border-top:1px solid #e3ecea;padding:9px 0}.item img{height:48px;border-radius:6px;margin-top:4px}
+.qty{display:flex;align-items:center;gap:6px}.qty button{width:44px;height:44px;border-radius:50%;border:1px solid var(--c);background:#fff;color:var(--c);font-size:24px;cursor:pointer;padding:0}.qty b{min-width:28px;text-align:center;font-size:18px}
+.qty input{width:64px;text-align:center;padding:8px}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}.tile{background:#f4f7f6;border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:6px;justify-content:space-between}.tile.low{background:#fff1d6}.tile .qty{justify-content:space-between}
+.t{font-weight:700;font-variant-numeric:tabular-nums;color:var(--c);min-width:46px}
+.kpis{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}.kpi{background:#fff;border-radius:14px;padding:12px 8px;text-align:center;box-shadow:0 1px 3px #0001}.kpi b{display:block;font-size:20px}.kpi small{display:block}
+.total{display:flex;justify-content:space-between;align-items:baseline;font-size:26px;font-weight:700;margin:10px 0}.pay{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}.pay .btn{margin:0;padding:14px 4px}
+.mini{display:flex;gap:6px;margin-top:6px}.mini .btn{margin:0;flex:1;padding:10px 4px;font-size:14px}
+.big-t{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums}
+.bar{background:#e3ecea;border-radius:4px;height:8px;min-width:60px}.bar>i{display:block;height:8px;border-radius:4px;background:var(--c)}
+table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:5px 4px;border-bottom:1px solid #e3ecea;text-align:left;vertical-align:top}
+details{margin-top:8px;border-top:1px dashed #bcccc9;padding-top:6px}summary{cursor:pointer;font-size:13px;color:var(--c);font-weight:600}
+.hub{display:flex;gap:12px;align-items:center;cursor:pointer}.hub span{font-size:28px}
+#bk{background:#fff3cd;padding:8px 12px;font-size:13px;text-align:center}
+#toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:#16302d;color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;z-index:30;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;max-width:94vw;overflow:hidden;text-overflow:ellipsis}#toast.on{opacity:1}#toast.u{pointer-events:auto}#toast button{background:none;border:0;color:#7ee0d4;font-weight:700;font-size:14px;margin-left:10px;cursor:pointer}
+#doc{position:fixed;inset:0;background:#fff;overflow:auto;z-index:20;padding:12px}
+.sheet{max-width:700px;margin:auto}.sheet h2{margin:0}.sheet img{height:70px;border-radius:4px}
+@media print{body>*:not(#doc){display:none!important}#doc{position:static;padding:0}.noprint{display:none!important}}
+</style></head><body>
+<header><span>🔧 Furgobici Taller</span><span><small id="sync" style="color:#cfe"></small> <button data-act="tab" data-t="adv" title="Avanzado">⚙</button></span></header>
+<div id="bk" class="hide"></div>
+<main id="app"></main>
+<nav id="nav"></nav>
+<div id="toast"></div>
+<div id="doc" class="hide"></div>
+<script>
+
+/* ===== Utilidades ===== */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const rand=n=>Array.from(crypto.getRandomValues(new Uint8Array(n)),x=>"ABCDEFGHJKMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789"[x%54]).join("");
+const ymd=d=>{const z=new Date(d.getTime()-d.getTimezoneOffset()*6e4);return z.toISOString().slice(0,10)};
+const r2=n=>Math.round((+n||0)*100)/100;
+const money=n=>r2(n).toFixed(2).replace(".",",")+" €";
+const fdate=s=>s?s.split("-").reverse().join("/"):"";
+const hms=ms=>{const s=Math.floor(ms/1000);return [Math.floor(s/3600),Math.floor(s%3600/60),s%60].map(n=>String(n).padStart(2,"0")).join(":")};
+const normPhone=p=>String(p||"").replace(/[\s.\-()]/g,"").replace(/^(\+34|0034)/,"");
+const clone=o=>JSON.parse(JSON.stringify(o));
+const deep=(def,src)=>{if(src===undefined||src===null)return clone(def);if(typeof def!=="object"||Array.isArray(def))return src;const o={};for(const k in def)o[k]=deep(def[k],src[k]);for(const k in src)if(!(k in o))o[k]=src[k];return o};
+const MESES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+const DIAS=["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
+const mname=m=>MESES[+m.slice(5,7)-1]+" "+m.slice(0,4);
+const mshift=(m,n)=>{const d=new Date(+m.slice(0,4),+m.slice(5,7)-1+n,1);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")};
+const dlong=s=>{const d=new Date(s+"T00:00");return `${DIAS[d.getDay()]} ${d.getDate()} de ${MESES[d.getMonth()]}`};
+
+/* ===== Cálculos puros ===== */
+const chainWear=(L,base)=>(L-base)/base*100;
+const develop=(ch,cog,bsd,w,cad,circ)=>{const ratio=ch/cog,c=circ||Math.PI*(bsd+2*w),dev=ratio*c/1000;return{ratio,gi:dev*1000/Math.PI/25.4,dev,kmh:dev*cad*60/1000}};
+const tirePress=(pref,mref,m,ex,tube,lo,hi)=>{const p=pref*Math.pow(m/mref,ex);return{p,lo:p+(tube?lo:0),hi:p+(tube?hi:0)}};
+const spokeLen=({erd,pcd,d,h,n,x,sub=true,off=0})=>{const R=erd/2,r=pcd/2,a=720*x/n*Math.PI/180;return Math.sqrt(R*R+r*r+d*d-2*R*r*Math.cos(a))-(sub?h/2:0)+off};
+const CALC0=()=>({chain:{pitches:24,pitch:12.7,thr1:0.5,thr2:0.75,thr3:1,warn:80},tire:{pref:4.5,mref:85,exp:1,tubeLo:0.3,tubeHi:0.5,split:false,front:45},dev:{mode:"formula",circ:2105},spoke:{hole:2.4,step:1,offset:0,sub:true}});
+
+/* ===== Datos base ===== */
+const TOWNS=["Bilbao","Getxo","Leioa","Erandio","Sopela","Berango","Barakaldo","Basauri","Galdakao","Mungia","Plentzia","Gorliz"];
+const DOW=["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+const CATS=["Piezas","Combustible","Furgoneta","Herramienta","Autónomo y gestoría","Seguros","Otros"];
+const BASE=[["cuadro","Cuadro y horquilla (grietas, golpes)"],["dir","Dirección / juego de dirección"],["rd","Rueda delantera (centrado, radios, eje)"],["rt","Rueda trasera (centrado, radios, eje)"],["neum","Neumáticos (desgaste, cortes, presión)"],["fd","Freno delantero"],["ft","Freno trasero"],["cadena","Cadena (desgaste)"],["casete","Cassette / piñones"],["platos","Platos y bielas"],["pedalier","Eje de pedalier (juego)"],["cambio","Cambio trasero y ajuste"],["cables","Cables y fundas"],["manillar","Manillar y potencia (apriete)"],["sillin","Sillín y tija"],["pedales","Pedales"],["luces","Luces y reflectantes"]];
+const EXTRA={"Urbana":[["guard","Guardabarros y portabultos"],["desv","Desviador delantero (si lo hay)"]],"Montaña (MTB)":[["susp","Suspensión (retenes, SAG)"],["disco","Discos, pastillas y líquido de frenos"],["tubeless","Tubeless / sellante"]],"Carretera":[["cinta","Cinta de manillar"],["desv","Desviador delantero"]],"Eléctrica":[["bat","Batería y contactos"],["motor","Motor, ruidos y asistencia"],["sens","Sensor de pedaleo y cableado"]],"Gravel":[["disco","Discos, pastillas y líquido de frenos"],["cinta","Cinta de manillar"]],"Otra":[]};
+const TYPES=Object.keys(EXTRA);
+const EMO={g:"🟢",a:"🟡",r:"🔴",n:"⚪"};
+const checkItems=t=>BASE.concat(EXTRA[t]||[]);
+const TORQUE=[
+["Ruedas","Tuercas de eje macizo","—",29.4,44],["Ruedas","Lockring de cassette","Shimano",29.4,49],["Ruedas","Lockring de cassette","SRAM",40,40],["Ruedas","Lockring de cassette","Campagnolo",50,50],["Ruedas","Cuerpo de rueda libre (freehub)","Shimano",35,50],
+["Dirección y manillar","Potencia: tornillos de dirección (threadless)","Deda",8,8],["Dirección y manillar","Potencia: tornillos de dirección (threadless)","FSA carbono",8.8,8.8],["Dirección y manillar","Potencia: tornillos de dirección (threadless)","Thomson",5.4,5.4],["Dirección y manillar","Potencia: tornillos de dirección (threadless)","Race Face",6.2,6.2],["Dirección y manillar","Potencia: tornillos de dirección (threadless)","Time",5,5],
+["Dirección y manillar","Potencia: placa de 4 tornillos (manillar)","Deda",8,8],["Dirección y manillar","Potencia: placa de 4 tornillos (manillar)","FSA OS-115 carbono",8.8,8.8],["Dirección y manillar","Potencia: placa de 4 tornillos (manillar)","Race Face",6.2,6.2],["Dirección y manillar","Potencia: placa de 4 tornillos (manillar)","Thomson",5.4,5.4],["Dirección y manillar","Potencia: placa de 4 tornillos (manillar)","Time",6,6],
+["Sillín","Carro de sillín","Shimano",20,30],["Sillín","Carro de sillín","Campagnolo",22,22],["Sillín","Carro de sillín (tornillo M8)","Truvativ",22,24],["Sillín","Carro de sillín (tornillo M6)","Truvativ",6,7.1],["Sillín","Abrazadera de tija (apretar lo mínimo)","Campagnolo",4,6.8],
+["Bielas y pedalier","Pedal a biela","Shimano (mínimo)",35,35],["Bielas y pedalier","Pedal a biela","Campagnolo",40,40],["Bielas y pedalier","Pedal a biela","Truvativ",31.2,33.9],["Bielas y pedalier","Tornillo de biela","Shimano",34,44],["Bielas y pedalier","Tornillo de biela","Campagnolo",32,38],["Bielas y pedalier","Tornillo de biela (M8)","FSA",34,39],["Bielas y pedalier","Tornillo de biela","Race Face",54,54],["Bielas y pedalier","Tornillo de biela ISIS","Truvativ",43,47],["Bielas y pedalier","Tornillos de pinza de biela","Shimano Hollowtech II",9.9,14.9],["Bielas y pedalier","Tapa de ajuste de biela","Shimano Hollowtech II",0.5,0.7],["Bielas y pedalier","Tornillo de plato (acero)","Shimano",7.9,10.7],["Bielas y pedalier","Tornillo de plato (aluminio)","Shimano",5,10],["Bielas y pedalier","Caja de pedalier de cartucho","Shimano",49.1,68.7],["Bielas y pedalier","Caja de pedalier","Shimano Hollowtech II",34.5,49.1],
+["Cambios","Abrazadera de maneta (manillar de carretera)","Shimano / SRAM",6,8],["Cambios","Abrazadera de maneta (manillar de carretera)","Campagnolo",10,10],["Cambios","Desviador delantero: abrazadera","Shimano / SRAM",5,7],["Cambios","Desviador delantero: tornillo de cable","Shimano",5,6.8],["Cambios","Cambio trasero: fijación","Shimano / SRAM",8,10],["Cambios","Cambio trasero: fijación","Campagnolo",15,15],["Cambios","Cambio trasero: tornillo de cable","Shimano",5,7],["Cambios","Cambio trasero: tornillo de cable","SRAM",4,5],["Cambios","Cambio trasero: tornillo de polea","Shimano",2.9,3.9],
+["Frenos","Maneta de freno (manillar recto)","Shimano",6,8],["Frenos","Pinza (dual-pivot) al cuadro","Shimano",7.8,9.8],["Frenos","Pinza (dual-pivot) al cuadro","Tektro",8,10],["Frenos","Zapata (espárrago roscado)","Shimano",5,7],["Frenos","Zapata (espárrago liso)","Shimano",7.9,8.8],["Frenos","Freno V-brake al cuadro","Shimano",8,10],["Frenos","Tornillo de cable de freno","Shimano",6,8],
+["Freno de disco","Lockring de disco (centerlock)","Shimano / Avid",40,40],["Freno de disco","Tornillos de disco M5","Shimano",2,4],["Freno de disco","Tornillos de disco M5","Avid",6.2,6.2],["Freno de disco","Tornillos de disco M5","Hayes",5.6,5.6],["Freno de disco","Tornillos de disco M5","Magura",3.8,3.8],["Freno de disco","Pinza al cuadro","Shimano / Tektro",6,8],["Freno de disco","Pinza al cuadro","Avid",9,10.2],["Freno de disco","Pinza al cuadro","Magura",5.7,5.7]];
+const PITCH=[["Shimano / SRAM 8 velocidades","4,8"],["Shimano / SRAM 9 velocidades","4,35"],["Shimano / SRAM 10 velocidades","3,95"],["Shimano / SRAM 11 velocidades (carretera)","3,74"],["Shimano / SRAM 11 velocidades (MTB)","3,9"],["SRAM 12 velocidades (MTB)","3,65"],["Campagnolo 8 velocidades","5"],["Campagnolo 9 velocidades","4,55"],["Campagnolo 10 velocidades","4,15 (media)"],["Campagnolo 11 velocidades","3,85 (media)"]];
+const HUBS=[["100","130","QR 9/10 mm","Carretera de 5–10 velocidades"],["100","135","QR 9/10 mm","Carretera con disco (QR) y MTB de 8–10 velocidades"],["100","142","Eje pasante 12 mm","Carretera moderna"],["110","148","Eje pasante 12 mm","Carretera Boost y e-bikes"],["100 / 110","142 / 148 / 150 / 157","Eje pasante 12, 15 o 20 mm","MTB moderna"],["96","120","—","Carretera antigua"]];
+const LIFE0=()=>({chain:{n:"Cadena",km:3000,mo:18,kw:"cadena"},cassette:{n:"Cassette",km:9000,mo:48,kw:"cassette|casete|piñon|piñón"},tires:{n:"Cubiertas",km:4500,mo:36,kw:"cubierta|neumático|neumatico"},pads:{n:"Pastillas / zapatas",km:2500,mo:24,kw:"pastilla|zapata"},cables:{n:"Cables y fundas",km:8000,mo:24,kw:"cable|funda"},fluid:{n:"Líquido de frenos",km:0,mo:24,kw:"purga|líquido|liquido"},sealant:{n:"Sellante tubeless",km:0,mo:6,kw:"sellante|tubeless"},service:{n:"Revisión general",km:2500,mo:6,kw:"revisión|revision|servicio integral|puesta a punto"}});
+const COND0=()=>({use:{"Ciudad / asfalto":1,"Mixto":0.85,"Montaña / barro":0.6},wet:{"Poco":1,"Normal":0.85,"Mucho":0.65},ebike:0.8});
+const seed=()=>({clients:[],bikes:[],jobs:[],expenses:[],fixed:[],counter:{},lastBackup:null,torque:[],outbox:[],zones:[],webCitas:[],cal:[],calAt:0,autoBk:"",
+ set:{name:"Furgobici",nif:"",phone:"695 410 977",iva:21,target:30,calc:CALC0(),life:LIFE0(),cond:COND0(),sb:{url:"",key:"",email:"",site:"",rt:""},autoJobs:true},
+ labor:[["Revisión y puesta a punto",30,60],["Servicio integral",49,90],["Cambio de cadena",10,15],["Cambio de cubierta",8,15],["Ajuste de cambios",10,15],["Purga de frenos hidráulicos",20,30],["Centrado de rueda",15,30]].map(([name,price,min])=>({id:uid(),name,price,min})),
+ parts:[["Cadena 9-10v",14,9,3,2],["Cadena 11v",22,14,3,2],["Cubierta 700x28",20,11,2,2],["Pastillas de freno de disco",14,7,4,2],["Cámara 700c",6,3,6,4]].map(([name,price,cost,stock,min])=>({id:uid(),name,price,cost,stock,min,uses:0}))});
+function migrate(o){const d=seed();["torque","outbox","zones","webCitas","fixed","expenses","cal"].forEach(k=>o[k]=o[k]||[]);o.calAt=o.calAt||0;o.autoBk=o.autoBk||"";o.set=o.set||d.set;if(o.set.autoJobs===undefined)o.set.autoJobs=true;
+ o.set.calc=deep(CALC0(),o.set.calc);o.set.life=deep(LIFE0(),o.set.life);o.set.cond=deep(COND0(),o.set.cond);o.set.sb=deep(d.set.sb,o.set.sb);o.parts.forEach(p=>p.uses=p.uses||0);return o}
+
+/* ===== Almacenamiento local (IndexedDB, sin conexión) ===== */
+let S=null,view={tab:"home"},docState=null,tm,tok="",tokExp=0,tt,undoFn=null,SILENT=false,syncing=false;
+const hasIDB="indexedDB"in window;
+const idb=()=>new Promise((res,rej)=>{const r=indexedDB.open("furgobici-taller",1);r.onupgradeneeded=()=>r.result.createObjectStore("kv");r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+async function load(){try{if(hasIDB){const db=await idb();return await new Promise(res=>{const q=db.transaction("kv").objectStore("kv").get("state");q.onsuccess=()=>res(q.result||null);q.onerror=()=>res(null)})}}catch(e){}
+ try{return JSON.parse(localStorage.fbTaller||"null")}catch(e){return null}}
+function persist(){clearTimeout(tm);tm=setTimeout(async()=>{try{if(hasIDB){const db=await idb();db.transaction("kv","readwrite").objectStore("kv").put(S,"state")}else localStorage.fbTaller=JSON.stringify(S)}catch(e){$("#sync").textContent="⚠️ no se pudo guardar"}},150)}
+function toast(t,fn){const e=$("#toast");undoFn=fn||null;e.innerHTML=esc(t)+(fn?`<button data-act="undo">Deshacer</button>`:"");e.classList.add("on");e.classList.toggle("u",!!fn);clearTimeout(tt);tt=setTimeout(()=>{e.classList.remove("on");undoFn=null},fn?5000:2400)}
+const buzz=()=>{try{navigator.vibrate&&navigator.vibrate(12)}catch(e){}};
+
+/* ===== Acceso a datos ===== */
+const J=id=>S.jobs.find(j=>j.id==id),B=id=>S.bikes.find(b=>b.id==id),C=id=>S.clients.find(c=>c.id==id),P=id=>S.parts.find(p=>p.id==id);
+const bikeLabel=b=>b?`${b.type}${b.brand?" "+b.brand:""}`:"—";
+const jobTotals=j=>{const sub=j.tasks.reduce((a,t)=>a+t.price*t.qty,0)+j.used.reduce((a,p)=>a+p.price*p.qty,0),total=Math.max(0,sub-(+j.disc||0)),base=total/(1+S.set.iva/100);return{sub,total,base,iva:total-base}};
+const estMin=j=>j.tasks.reduce((a,t)=>a+(+t.min||0)*t.qty,0);
+const elapsedMs=j=>(j.elapsed||0)+(j.tStart?Date.now()-j.tStart:0);
+const partCost=j=>j.used.reduce((a,p)=>a+(p.cost||0)*p.qty,0);
+const newBike=(clientId,o)=>{const b={id:uid(),clientId,type:"Urbana",brand:"",size:"",serial:"",comps:"",photo:"",created:Date.now(),kmWeek:40,use:"Mixto",wet:"Normal",last:{},showSerial:false,...o};S.bikes.push(b);return b};
+const newJob=bikeId=>{const b=B(bikeId),j={id:uid(),bikeId,date:ymd(new Date()),time:"",title:"",status:"Abierto",ctype:b.type,check:{},tasks:[],used:[],disc:0,notes:"",elapsed:0,tStart:null,paid:false,method:"",paidDate:"",receiptNo:"",stockApplied:false,citaId:null,evId:null};S.jobs.push(j);return j};
+function learned(name){const xs=S.jobs.filter(j=>j.status=="Terminado"&&elapsedMs(j)>6e4&&j.tasks[0]&&j.tasks[0].name==name).map(j=>elapsedMs(j)/6e4);return xs.length?{avg:xs.reduce((a,b)=>a+b)/xs.length,n:xs.length}:null}
+function receiptNo(){const y=new Date().getFullYear();S.counter[y]=(S.counter[y]||0)+1;return `R-${y}-${String(S.counter[y]).padStart(4,"0")}`}
+const opt=(arr,sel,f=x=>[x,x])=>arr.map(x=>{const[v,l]=f(x);return `<option value="${esc(v)}" ${v==sel?"selected":""}>${esc(l)}</option>`}).join("");
+const topLabor=()=>{const u={};S.jobs.forEach(j=>j.tasks.forEach(t=>u[t.name]=(u[t.name]||0)+1));return S.labor.slice().sort((a,b)=>(u[b.name]||0)-(u[a.name]||0)).slice(0,6)};
+const topParts=()=>S.parts.slice().sort((a,b)=>(b.uses||0)-(a.uses||0)||a.name.localeCompare(b.name)).filter(p=>p.uses>0).slice(0,8);
+const addUse=(j,p)=>{const u=j.used.find(x=>x.partId==p.id);u?u.qty++:j.used.push({partId:p.id,name:p.name,price:p.price,cost:p.cost||0,qty:1})};
+function expTemplates(){const map={};S.expenses.filter(e=>!/^Pedido/.test(e.concept)).forEach(e=>{const k=e.concept+"|"+e.cat,m=map[k]||(map[k]={concept:e.concept,cat:e.cat,n:0,amount:0,date:""});m.n++;if(e.date>=m.date){m.date=e.date;m.amount=e.amount}});
+ const t=Object.values(map).sort((a,b)=>b.n-a.n).slice(0,5);[["Gasolina","Combustible"],["Material de taller","Herramienta"],["Parking / peaje","Furgoneta"]].forEach(([c,k])=>{if(t.length<5&&!t.some(x=>x.concept==c))t.push({concept:c,cat:k,amount:0})});return t}
+
+/* ===== Finanzas ===== */
+function mstats(m){const inc=S.jobs.filter(j=>j.paid&&(j.paidDate||"").startsWith(m)),tot=j=>jobTotals(j).total;
+ const I=inc.reduce((a,j)=>a+tot(j),0),base=inc.reduce((a,j)=>a+jobTotals(j).base,0),byM={};inc.forEach(j=>{const k=j.method||"Sin método";byM[k]=(byM[k]||0)+tot(j)});
+ const ex=S.expenses.filter(e=>e.date.startsWith(m)),fx=S.fixed.filter(f=>f.from<=m),byC={};
+ ex.forEach(e=>byC[e.cat]=(byC[e.cat]||0)+e.amount);fx.forEach(f=>byC[f.cat]=(byC[f.cat]||0)+f.amount);
+ const G=ex.reduce((a,e)=>a+e.amount,0)+fx.reduce((a,f)=>a+f.amount,0),hrs=inc.reduce((a,j)=>a+elapsedMs(j),0)/36e5;
+ return{inc,I,iva:I-base,byM,ex,fx,G,byC,net:I-G,parts:inc.reduce((a,j)=>a+partCost(j),0),hrs,n:inc.length}}
+
+/* ===== Mantenimiento predictivo ===== */
+function lastChange(b,key){const L=S.set.life[key],re=new RegExp(L.kw,"i");let best=(b.last||{})[key]||"";
+ S.jobs.filter(j=>j.bikeId==b.id&&j.status=="Terminado").forEach(j=>{if(j.tasks.concat(j.used).some(x=>re.test(x.name))&&j.date>best)best=j.date});return best||null}
+function predictAll(b){const cd=S.set.cond,mult=(cd.use[b.use]??1)*(cd.wet[b.wet]??1)*(b.type=="Eléctrica"?cd.ebike:1),kw=Math.max(1,+b.kmWeek||0);
+ return Object.entries(S.set.life).map(([k,L])=>{const last=lastChange(b,k);if(!last)return{k,name:L.n,state:"n",pct:0,due:null,last:null};
+  const t0=new Date(last+"T00:00").getTime(),wks=Math.max(0,(Date.now()-t0)/6048e5),kmS=wks*kw,lifeKm=L.km*mult,months=(Date.now()-t0)/(30.44*864e5);
+  const pk=lifeKm>0?kmS/lifeKm:0,pm=L.mo>0?months/L.mo:0,pct=Math.max(pk,pm),dw=Math.min(lifeKm>0?lifeKm/kw:Infinity,L.mo>0?L.mo*4.348:Infinity);
+  return{k,name:L.n,last,pct,state:pct>=1?"r":pct>=.8?"a":"g",due:isFinite(dw)?ymd(new Date(t0+dw*6048e5)):null,kmS:Math.round(kmS)}})}
+
+/* ===== Conexión con la web (Supabase) y Google Calendar ===== */
+async function login(){const c=S.set.sb;if(SILENT)throw new Error("login");const pw=prompt("Contraseña de "+c.email+" (solo esta vez)");if(!pw)throw new Error("Cancelado");
+ const r=await fetch(c.url+"/auth/v1/token?grant_type=password",{method:"POST",headers:{apikey:c.key,"Content-Type":"application/json"},body:JSON.stringify({email:c.email,password:pw})});if(!r.ok)throw new Error("Credenciales incorrectas");
+ const j=await r.json();tok=j.access_token;c.rt=j.refresh_token;tokExp=Date.now()+(j.expires_in-60)*1000;persist()}
+async function ensureTok(){const c=S.set.sb;if(!c.url||!c.key||!c.email)throw new Error("Conecta la web en ⚙ › Web");if(tok&&tokExp>Date.now())return;
+ if(c.rt){try{const r=await fetch(c.url+"/auth/v1/token?grant_type=refresh_token",{method:"POST",headers:{apikey:c.key,"Content-Type":"application/json"},body:JSON.stringify({refresh_token:c.rt})});
+  if(r.ok){const j=await r.json();tok=j.access_token;c.rt=j.refresh_token;tokExp=Date.now()+(j.expires_in-60)*1000;persist();return}c.rt=""}catch(e){throw e}}
+ await login()}
+async function api(path,{method="GET",body,prefer}={}){const c=S.set.sb;await ensureTok();
+ const h={apikey:c.key,Authorization:"Bearer "+tok,"Content-Type":"application/json"};if(prefer)h.Prefer=prefer;
+ const r=await fetch(c.url+path,{method,headers:h,body:body?JSON.stringify(body):undefined});
+ if(!r.ok)throw new Error(r.status+" "+(await r.text()).slice(0,120));const t=await r.text();return t?JSON.parse(t):null}
+const shrink=(d,w)=>new Promise(r=>{if(!d)return r("");const im=new Image();im.onload=()=>{const c=document.createElement("canvas"),k=Math.min(1,w/im.width);c.width=im.width*k;c.height=im.height*k;c.getContext("2d").drawImage(im,0,0,c.width,c.height);r(c.toDataURL("image/jpeg",.6))};im.onerror=()=>r("");im.src=d});
+const passUrl=b=>S.set.sb.site.replace(/\/+$/,"")+"/pasaporte.html?t="+b.passToken;
+async function publishPass(bikeId){const b=B(bikeId),c=C(b.clientId);if(!b.passToken)b.passToken=rand(12);
+ const js=S.jobs.filter(j=>j.bikeId==b.id&&j.status=="Terminado").sort((x,y)=>y.date.localeCompare(x.date)).slice(0,30),pr=predictAll(b),svc=pr.find(p=>p.k=="service");
+ const payload={v:1,owner:(c&&c.name||"").split(" ")[0],shop:{name:S.set.name,phone:S.set.phone,site:S.set.sb.site},
+  bike:{type:b.type,brand:b.brand,size:b.size,serial:b.showSerial?b.serial:"",comps:b.comps,photo:await shrink(b.photo,320)},
+  history:js.map(j=>({d:j.date,t:j.title||j.tasks[0]&&j.tasks[0].name||"Intervención",i:j.tasks.concat(j.used).map(x=>x.name)})),
+  next:svc&&svc.due||"",pred:pr.filter(p=>p.state!="n").map(p=>({n:p.name,s:p.state,due:p.due})),updated:ymd(new Date())};
+ await api("/rest/v1/pasaportes?on_conflict=token",{method:"POST",body:{token:b.passToken,bike_ref:b.id,payload,updated_at:new Date().toISOString()},prefer:"resolution=merge-duplicates,return=minimal"});persist()}
+function queue(o){S.outbox=S.outbox.filter(x=>!(x.k==o.k&&x.id==o.id&&x.bikeId==o.bikeId));S.outbox.push(o);persist()}
+function queueJob(j){const T=jobTotals(j),b=B(j.bikeId);
+ if(j.citaId)queue({k:"cita",id:j.citaId,patch:{st:j.status=="Terminado"?"Terminada":"Reparando",parts:j.tasks.concat(j.used).map(x=>x.name).join(", ").slice(0,300),amount:r2(T.total),paid:!!j.paid,pay_method:j.method||""}});
+ if(b&&b.passToken)queue({k:"pass",bikeId:b.id})}
+async function flush(){const rest=[];let net=false;for(const o of S.outbox){if(net){rest.push(o);continue}
+ try{if(o.k=="cita")await api("/rest/v1/citas?id=eq."+o.id,{method:"PATCH",body:o.patch,prefer:"return=minimal"});else if(o.k=="pass")await publishPass(o.bikeId)}
+ catch(e){rest.push(o);if(/fetch|network|Failed|login/i.test(e.message))net=true}}S.outbox=rest;persist()}
+async function pull(){const d=ymd(new Date(Date.now()-864e5));S.webCitas=await api(`/rest/v1/citas?select=*&st=neq.Cancelada&st=neq.Terminada&date=gte.${d}&order=date.asc,hour.asc`)||[];persist()}
+async function pullCal(){const from=ymd(new Date(Date.now()-864e5)),to=ymd(new Date(Date.now()+14*864e5)),r=await api("/functions/v1/calendario",{method:"POST",body:{action:"list",from,to}});S.cal=(r&&r.events)||[];S.calAt=Date.now();persist()}
+function parseEv(ev){const txt=(ev.title||"")+" "+(ev.description||""),m=txt.match(/(?:\+?34[\s.]?)?([6-9]\d{2})[\s.\-]?(\d{3})[\s.\-]?(\d{3})/),phone=m?m[1]+m[2]+m[3]:"";
+ const parts=(ev.title||"").split(/\s[-–·|:]\s|:\s/),name=(parts[0]||"").replace(/\d[\d\s.\-+]{7,}/g,"").trim()||"Cliente";return{phone,name,svc:parts.slice(1).join(" - ").trim()}}
+function jobFromEvent(ev){const p=parseEv(ev);let cl=(p.phone&&S.clients.find(x=>normPhone(x.phone)==p.phone))||S.clients.find(x=>x.name.toLowerCase()==p.name.toLowerCase());
+ if(!cl){cl={id:uid(),name:p.name,phone:p.phone,email:"",notes:""};S.clients.push(cl)}
+ const b=S.bikes.find(x=>x.clientId==cl.id)||newBike(cl.id,{type:"Urbana"}),j=newJob(b.id);j.date=ev.date;j.time=ev.time;j.evId=ev.id;j.auto=true;j.title=p.svc||ev.title;
+ j.notes=[ev.location&&`Dirección: ${ev.location}`,ev.description].filter(Boolean).join("\n");
+ const sv=(p.svc||ev.title).toLowerCase(),lab=S.labor.find(l=>{const n=l.name.toLowerCase();return sv.includes(n)||n.split(" ").some(w=>w.length>5&&sv.includes(w))});
+ if(lab)j.tasks.push({name:lab.name,price:lab.price,min:lab.min,qty:1});return j}
+function jobFromCita(c){const ph=normPhone(c.phone);let cl=S.clients.find(x=>normPhone(x.phone)==ph);if(!cl){cl={id:uid(),name:c.name,phone:c.phone,email:c.email||"",notes:""};S.clients.push(cl)}
+ let b=S.bikes.find(x=>x.clientId==cl.id&&x.type==c.type&&(x.brand||"")==(c.model||""));if(!b)b=newBike(cl.id,{type:c.type||"Otra",brand:c.model||""});
+ const j=newJob(b.id);j.title=c.svc;j.date=c.date;j.time=String(c.hour).padStart(2,"0")+":00";j.citaId=c.id;
+ j.notes=[c.notes,c.addr?`Dirección: ${c.addr}, ${c.town}`:"",c.kind=="empresa"?`Empresa ${c.company}: ${c.bikes} bicis`:"",c.dest?`Destino: ${c.dest}`:"",c.bono_code?`Bono ${c.bono_code}`:""].filter(Boolean).join("\n");
+ const lab=S.labor.find(l=>l.name.toLowerCase()==String(c.svc).toLowerCase()),n=c.kind=="empresa"?Math.max(1,c.bikes):1;
+ if(lab){j.tasks.push({name:lab.name,price:lab.price,min:lab.min,qty:n});j.disc=Math.max(0,r2(lab.price*n-(+c.amount||0)))}
+ else if(+c.amount>0)j.tasks.push({name:c.svc,price:r2(c.amount/n),min:0,qty:n});
+ return j}
+function autoCreate(){if(!S.set.autoJobs)return 0;const t=ymd(new Date()),nx=ymd(new Date(Date.now()+864e5));let n=0;
+ S.cal.filter(e=>!e.allDay&&e.date>=t&&e.date<=nx).forEach(e=>{const fc=e.fb&&e.fb.fbCita,ex=S.jobs.find(j=>j.evId==e.id||(fc&&j.citaId==fc));
+  if(ex){if(ex.status=="Abierto"&&ex.evId==e.id&&(ex.date!=e.date||ex.time!=e.time)){ex.date=e.date;ex.time=e.time}return}
+  const wc=fc&&S.webCitas.find(c=>c.id==fc);const j=wc?jobFromCita(wc):jobFromEvent(e);j.evId=e.id;j.time=e.time;j.auto=true;n++});return n}
+function gcalLink(j){const b=B(j.bikeId),c=b&&C(b.clientId),mins=Math.max(30,estMin(j)||60),s=new Date(j.date+"T"+(j.time||"09:00")+":00"),e=new Date(s.getTime()+mins*6e4),g=d=>ymd(d).replaceAll("-","")+"T"+String(d.getHours()).padStart(2,"0")+String(d.getMinutes()).padStart(2,"0")+"00";
+ const q=new URLSearchParams({action:"TEMPLATE",text:`${c?c.name:""} · ${j.title||bikeLabel(b)}`,dates:g(s)+"/"+g(e),details:`${bikeLabel(b)}${c&&c.phone?"\nTel: "+c.phone:""}${j.notes?"\n"+j.notes:""}`,location:(j.notes.match(/Dirección: (.*)/)||[])[1]||"",ctz:"Europe/Madrid"});
+ return "https://calendar.google.com/calendar/render?"+q}
+async function autoBackup(){const t=ymd(new Date());if(S.autoBk==t)return;const copy=clone(S);copy.jobs.forEach(j=>Object.values(j.check).forEach(x=>delete x.photo));copy.bikes.forEach(b=>b.photo="");copy.expenses.forEach(e=>delete e.photo);copy.cal=[];copy.webCitas=[];copy.set.sb.rt="";
+ await api("/rest/v1/backups",{method:"POST",body:{data:copy},prefer:"return=minimal"});await api("/rest/v1/backups?created_at=lt."+new Date(Date.now()-14*864e5).toISOString(),{method:"DELETE",prefer:"return=minimal"}).catch(()=>{});S.autoBk=t;persist()}
+async function autoSync(manual){const c=S.set.sb;if(syncing||!c.url||!c.email||!navigator.onLine)return;syncing=true;SILENT=!manual;
+ try{await flush();await pull();let n=0;try{await pullCal();n=autoCreate()}catch(e){if(/404|calendar|Calendar|500|502/.test(e.message)&&manual)toast("Calendario no configurado en la web")}
+  try{await autoBackup()}catch(e){}
+  $("#sync").textContent="🔄 "+new Date().toTimeString().slice(0,5);persist();if(n)toast(n+" trabajo(s) nuevos desde el calendario");render()}
+ catch(e){if(e.message=="login")$("#sync").textContent="🔒 inicia sesión en ⚙";else if(manual)toast("Error: "+e.message.slice(0,60))}
+ finally{syncing=false;SILENT=false}}
+
+/* ===== Vistas ===== */
+const TABS=[["home","Hoy","🏠"],["jobs","Trabajos","🔧"],["clients","Clientes","👤"],["stock","Stock","📦"],["money","Dinero","💶"]];
+function render(){
+ $("#nav").innerHTML=TABS.map(([k,n,e])=>`<button data-act="tab" data-t="${k}" class="${view.tab==k?"on":""}"><span>${e}</span>${n}</button>`).join("");
+ const never=!S.lastBackup&&!S.autoBk,old=S.lastBackup&&!S.autoBk&&Date.now()-S.lastBackup>7*864e5,hasData=S.jobs.length||S.clients.length;
+ $("#bk").classList.toggle("hide",!(hasData&&(never||old)));$("#bk").innerHTML=`Los datos solo están en este móvil. Conecta la web (⚙) para copia automática diaria, o <a href="#" data-act="backup">descarga una copia</a>.`;
+ const y=scrollY,V={home:homeView,jobs:jobsView,clients:clientsView,stock:stockView,money:moneyView,adv:advView};
+ $("#app").innerHTML=V[view.tab]();scrollTo(0,y);if(view.tab=="adv"&&view.sec=="calc")runCalc();}
+
+const jobRow=j=>{const b=B(j.bikeId),c=b&&C(b.clientId),st=j.status=="Terminado"?(j.paid?["d","cobrado"]:["x","por cobrar"]):["o","en curso"];
+ return `<div class="item" data-act="openjob" data-id="${j.id}" style="cursor:pointer"><b>${esc(c?c.name:"?")}</b> · ${esc(bikeLabel(b))} <span class="tag ${st[0]}">${st[1]}</span><br><small>${fdate(j.date)}${j.time?" "+j.time:""} · ${esc(j.title||j.tasks.map(t=>t.name).join(", ")||"Sin tareas")} · ${money(jobTotals(j).total)}</small></div>`};
+const payBtns=j=>`<div class="mini">${[["Efectivo","💶"],["Bizum","📱"],["Tarjeta","💳"]].map(([m,e])=>`<button class="btn" data-act="quickpay" data-id="${j.id}" data-m="${m}">${e} ${m}</button>`).join("")}</div>`;
+function agendaRow(r){
+ if(r.j){const j=r.j,b=B(j.bikeId),c=b&&C(b.clientId),T=jobTotals(j),done=j.status=="Terminado",loc=(j.notes.match(/Dirección: (.*)/)||[])[1];
+  return `<div class="item"><div class="row" data-act="openjob" data-id="${j.id}" style="cursor:pointer;flex-wrap:nowrap"><div class="t f0">${j.time||"··:··"}</div><div style="flex:1"><b>${esc(c?c.name:"?")}</b> · ${esc(bikeLabel(b))}${j.auto?" 📅":""}<br><small>${esc(j.title||j.tasks.map(t=>t.name).join(", ")||"sin tareas aún")}${loc?" · "+esc(loc):""} · ${money(T.total)}</small></div>${done?`<span class="tag ${j.paid?"d":"x"}">${j.paid?"✔":"cobrar"}</span>`:""}</div>${!j.paid&&(j.tasks.length||j.used.length)?payBtns(j):""}</div>`}
+ const e=r.e;return `<div class="item"><div class="row" style="flex-wrap:nowrap"><div class="t f0">${e.time}</div><div style="flex:1"><b>${esc(e.title)}</b><br><small>${esc(e.location||"")}</small></div><button class="btn s f0" data-act="startev" data-id="${esc(e.id)}">Empezar</button></div></div>`}
+function agendaRows(date){const rows=[];S.jobs.filter(j=>j.date==date).forEach(j=>rows.push({t:j.time||"99:99",j}));
+ S.cal.filter(e=>e.date==date&&!e.allDay&&!S.jobs.some(j=>j.evId==e.id||(e.fb&&e.fb.fbCita&&j.citaId==e.fb.fbCita))).forEach(e=>rows.push({t:e.time,e}));return rows.sort((a,b)=>a.t.localeCompare(b.t))}
+
+function homeView(){const now=new Date(),t=ymd(now),tmr=ymd(new Date(now.getTime()+864e5)),rows=agendaRows(t),next=agendaRows(tmr);
+ const late=S.jobs.filter(j=>j.status=="Abierto"&&j.date<t),unpaid=S.jobs.filter(j=>j.status=="Terminado"&&!j.paid&&j.date<=t),low=S.parts.filter(p=>p.stock<=p.min);
+ const today=S.jobs.filter(j=>j.paid&&j.paidDate==t).reduce((a,j)=>a+jobTotals(j).total,0),m=t.slice(0,7),pm=mshift(m,-1),ps=mstats(pm);
+ const cit=S.webCitas.filter(c=>c.date>=t&&!S.jobs.some(j=>j.citaId==c.id)&&!S.cal.some(e=>e.fb&&e.fb.fbCita==c.id)).slice(0,5);
+ return `<h3 style="text-transform:capitalize;margin-bottom:10px">${dlong(t)}</h3>
+ <button class="btn big" data-act="newjobview">＋ Nuevo trabajo</button>
+ <div class="kpis" style="margin-top:12px"><div class="kpi"><b>${rows.length}</b><small>en la agenda</small></div><div class="kpi"><b>${unpaid.length}</b><small>por cobrar</small></div><div class="kpi"><b>${money(today)}</b><small>cobrado hoy</small></div></div>
+ <div class="card"><h3>Agenda de hoy</h3>${rows.map(agendaRow).join("")||"<small>Nada apuntado para hoy. Lo que añadas en Google Calendar aparece aquí solo.</small>"}</div>
+ ${late.length?`<div class="card"><h3>⏳ De días anteriores</h3>${late.map(jobRow).join("")}</div>`:""}
+ ${unpaid.length?`<div class="card"><h3>Por cobrar · ${money(unpaid.reduce((a,j)=>a+jobTotals(j).total,0))}</h3>${unpaid.map(j=>jobRow(j)+payBtns(j)).join("")}</div>`:""}
+ ${now.getHours()>=18?`<div class="card"><h3>🌙 Cerrar el día</h3>Cobrado hoy: <b>${money(today)}</b>${S.jobs.filter(j=>j.status=="Abierto"&&j.date==t).length?`<br><span class="err">Quedan ${S.jobs.filter(j=>j.status=="Abierto"&&j.date==t).length} trabajo(s) sin terminar.</span>`:""}<br><small>¿Gasolina, material o algo más hoy?</small><br>${expTemplates().slice(0,4).map(x=>`<button class="chip" data-act="exptpl" data-c="${esc(x.concept)}" data-k="${esc(x.cat)}" data-a="${x.amount}">${esc(x.concept)}${x.amount?" · "+money(x.amount):""}</button>`).join("")}</div>`:""}
+ ${+t.slice(8)<=3&&(ps.I||ps.G)?`<div class="card" data-act="mgo" data-m="${pm}" style="cursor:pointer"><h3>📊 Cierre de ${mname(pm)}</h3>Ganaste <b class="ok">${money(ps.I)}</b> · gastaste <b class="err">${money(ps.G)}</b> · te quedó <b>${money(ps.net)}</b><br><small>Toca para ver el detalle</small></div>`:""}
+ ${next.length?`<div class="card"><h3>Mañana · ${next.length}</h3>${next.slice(0,4).map(r=>`<div class="item"><span class="t">${r.t=="99:99"?"··:··":r.t}</span> ${esc(r.j?(C((B(r.j.bikeId)||{}).clientId)||{}).name:r.e.title)}</div>`).join("")}</div>`:""}
+ ${cit.length?`<div class="card"><h3>Citas de la web sin calendario</h3>${cit.map(x=>`<div class="item"><b>${fdate(x.date)} ${x.hour}:00</b> · ${esc(x.name)}<br><small>${esc(x.svc)} · ${esc(x.town)}</small><br><button class="btn s" data-act="cita2job" data-id="${esc(x.id)}">Empezar trabajo</button></div>`).join("")}</div>`:""}
+ ${low.length?`<div class="card"><h3>⚠ Stock bajo (${low.length})</h3>${low.slice(0,4).map(p=>`<div>${esc(p.name)} <small>quedan ${p.stock}</small></div>`).join("")}<button class="btn s" data-act="recvview">📥 Llegó pedido</button><button class="btn g s" data-act="copybuy">Copiar lista de compra</button></div>`:""}
+ ${S.set.sb.url?`<button class="btn g s" data-act="websync">🔄 Actualizar ahora</button>`:`<small>Conecta la web y Google Calendar en ⚙ para que todo se sincronice solo.</small>`}`}
+
+function recentClients(){const last={};S.jobs.forEach(j=>{const b=B(j.bikeId);if(b&&(!last[b.clientId]||j.date>last[b.clientId]))last[b.clientId]=j.date});return S.clients.slice().sort((a,b)=>(last[b.id]||"").localeCompare(last[a.id]||"")).slice(0,5)}
+function newJobView(){const q=(view.nq||"").trim(),ql=q.toLowerCase(),addTo=view.nc&&C(view.nc),cl=q?S.clients.filter(c=>(c.name+c.phone).toLowerCase().includes(ql)).slice(0,6):recentClients(),isPh=/\d{5}/.test(q);
+ return `<button class="btn g" data-act="jobsback">← Volver</button><div class="card"><h3>¿Para quién es?</h3><input placeholder="🔍 Nombre o teléfono" value="${esc(view.nq||"")}" data-chg="nq">
+ ${cl.map(c=>`<div class="item"><b>${esc(c.name)}</b> <small>${esc(c.phone)}</small><br>${S.bikes.filter(b=>b.clientId==c.id).map(b=>`<button class="chip" data-act="startjob" data-id="${b.id}">🚲 ${esc(bikeLabel(b))}</button>`).join("")}<button class="chip" data-act="addbiketo" data-id="${c.id}">＋ otra bici</button></div>`).join("")}</div>
+ <div class="card"><h3>${addTo?"Nueva bici de "+esc(addTo.name):"Cliente nuevo"}</h3>
+ ${addTo?"":`<input id="nj_name" placeholder="Nombre" value="${isPh?"":esc(q)}"><input id="nj_phone" type="tel" placeholder="Teléfono" value="${isPh?esc(q):""}" style="margin-top:8px">`}
+ <div class="row" style="margin-top:8px"><select id="nj_type">${opt(TYPES,"Urbana")}</select><input id="nj_brand" placeholder="Marca / modelo"></div><button class="btn big" data-act="createjob">Crear y empezar</button></div>`}
+
+function jobsView(){
+ if(view.sub=="new")return newJobView();
+ if(view.id){const j=J(view.id);if(j)return jobDetail(j);view.id=null}
+ const f=view.f||"open",q=(view.q||"").toLowerCase();let l=S.jobs.slice().sort((a,b)=>(b.date+(b.time||"")).localeCompare(a.date+(a.time||"")));
+ if(f=="open")l=l.filter(j=>j.status=="Abierto");else if(f=="unpaid")l=l.filter(j=>j.status=="Terminado"&&!j.paid);
+ if(q)l=l.filter(j=>{const b=B(j.bikeId),c=b&&C(b.clientId);return [j.title,bikeLabel(b),c&&c.name,j.receiptNo].join(" ").toLowerCase().includes(q)});
+ return `<button class="btn big" data-act="newjobview">＋ Nuevo trabajo</button><div class="card" style="margin-top:12px">${[["open","En curso"],["unpaid","Por cobrar"],["all","Todos"]].map(([k,n])=>`<button class="chip ${f==k?"on":""}" data-act="jf" data-f="${k}">${n}</button>`).join("")}<input placeholder="🔍 Buscar" value="${esc(view.q||"")}" data-chg="jq" style="margin-top:8px"></div>
+ <div class="card">${l.map(jobRow).join("")||"<small>Nada por aquí.</small>"}</div>`}
+
+function jobDetail(j){const b=B(j.bikeId),c=b&&C(b.clientId),T=jobTotals(j),done=j.status=="Terminado",el=elapsedMs(j),items=checkItems(j.ctype),cnt={g:0,a:0,r:0};
+ items.forEach(([k])=>{const s=(j.check[k]||{}).s;if(cnt[s]!==undefined)cnt[s]++});
+ const first=j.tasks[0],lr=first&&learned(first.name),est=estMin(j);
+ const qty=(w,i,q)=>`<div class="qty f0"><button data-act="qty" data-id="${j.id}" data-w="${w}" data-i="${i}" data-d="-1">−</button><b>${q}</b><button data-act="qty" data-id="${j.id}" data-w="${w}" data-i="${i}" data-d="1">+</button></div>`;
+ const rows=j.tasks.map((t,i)=>`<div class="item row"><div style="flex:3">🛠 ${esc(t.name)}<br><small>${money(t.price)}</small></div>${qty("t",i,t.qty)}<div class="f0" style="min-width:68px;text-align:right">${money(t.price*t.qty)}</div></div>`).join("")+j.used.map((p,i)=>`<div class="item row"><div style="flex:3">🔩 ${esc(p.name)}<br><small>${money(p.price)}</small></div>${qty("u",i,p.qty)}<div class="f0" style="min-width:68px;text-align:right">${money(p.price*p.qty)}</div></div>`).join("");
+ const addsel=`<select data-chg="addany" data-id="${j.id}"><option value="">＋ Añadir tarea o pieza…</option>${S.labor.map(l=>`<option value="l:${l.id}">🛠 ${esc(l.name)} · ${money(l.price)}</option>`).join("")}${S.parts.map(p=>`<option value="p:${p.id}">🔩 ${esc(p.name)} · ${money(p.price)} (stock ${p.stock})</option>`).join("")}</select>`;
+ const pay=`<div class="pay">${[["Efectivo","💶"],["Bizum","📱"],["Tarjeta","💳"]].map(([m,e])=>`<button class="btn" data-act="pay" data-id="${j.id}" data-m="${m}">${e}<br>${m}</button>`).join("")}</div>${done?"":`<button class="btn g big" style="font-size:15px;padding:11px" data-act="finish" data-id="${j.id}">Terminar sin cobrar todavía</button>`}`;
+ return `<button class="btn g" data-act="jobsback">← Volver</button>
+ <div class="card"><h3>${esc(c?c.name:"?")} · ${esc(bikeLabel(b))}</h3><small>${esc(c?c.phone:"")}${j.citaId?" · cita web":""}${j.evId?" · 📅 calendario":""} · ${fdate(j.date)}${j.time?" "+j.time:""}</small>
+  ${c&&c.phone?`<br><a class="btn s g" style="text-decoration:none;display:inline-block" href="tel:${esc(c.phone)}">📞 Llamar</a>`:""}${(j.notes.match(/Dirección: (.*)/)||[])[1]?`<a class="btn s g" style="text-decoration:none;display:inline-block" target="_blank" rel="noopener" href="https://www.google.com/maps/search/${encodeURIComponent((j.notes.match(/Dirección: (.*)/)||[])[1])}">🗺 Ir</a>`:""}
+  <div class="row" style="margin-top:8px"><div class="big-t" id="tmr">${hms(el)}</div><button class="btn f0 ${j.tStart?"r":""}" data-act="ttoggle" data-id="${j.id}">${j.tStart?"⏸ Pausar":"▶ Cronometrar"}</button></div>
+  <small>Estimado ${est} min${lr?` · tu media en «${esc(first.name)}»: ${Math.round(lr.avg)} min (${lr.n})`:""}</small></div>
+ <div class="card"><h3>¿Qué hay que hacer?</h3>${topLabor().map(l=>`<button class="chip" data-act="addlab" data-id="${j.id}" data-l="${l.id}">🛠 ${esc(l.name)}</button>`).join("")}${topParts().slice(0,6).map(p=>`<button class="chip" data-act="addpt" data-id="${j.id}" data-p="${p.id}">🔩 ${esc(p.name)}</button>`).join("")}
+  <div style="margin-top:8px">${rows||"<small>Toca una tarea o pieza de arriba, o usa el desplegable.</small>"}</div><div style="margin-top:8px">${addsel}</div></div>
+ <div class="card"><div class="row"><h3 class="f0" style="margin:0">Revisión de la bici</h3><small>🟢 ${cnt.g} · 🟡 ${cnt.a} · 🔴 ${cnt.r}</small><button class="btn g s f0" data-act="togchk">${view.chk?"Ocultar":"Hacer revisión"}</button></div>
+  ${view.chk?items.map(([k,l])=>{const x=j.check[k]||{s:"n"};return `<div class="item"><div class="row"><div style="flex:2">${esc(l)}</div><div class="sem f0">${["g","a","r"].map(s=>`<button class="${x.s==s?"on":""}" data-act="chk" data-id="${j.id}" data-k="${k}" data-s="${s}">${EMO[s]}</button>`).join("")}</div></div>
+   <div class="row"><input placeholder="Nota" value="${esc(x.note||"")}" data-chg="chknote" data-id="${j.id}" data-k="${k}"><label class="f0" style="margin:0;font-size:22px">📷<input type="file" accept="image/*" capture="environment" class="hide" data-chg="chkphoto" data-id="${j.id}" data-k="${k}"></label></div>${x.photo?`<img src="${x.photo}" alt="foto">`:""}</div>`}).join(""):""}</div>
+ <div class="card"><div class="total"><span>Total</span><span>${money(T.total)}</span></div><small>IVA ${S.set.iva}% incluido (base ${money(T.base)} + IVA ${money(T.iva)})</small>
+  ${done&&j.paid?`<p class="ok"><b>✅ Cobrado</b> · ${esc(j.method)} · recibo ${esc(j.receiptNo)}</p><button class="btn" data-act="doc" data-t="receipt" data-id="${j.id}">📤 Enviar recibo</button><button class="btn g" data-act="reopen" data-id="${j.id}">Reabrir</button>`:`<h4>${done?"Terminado, falta cobrar":"Terminar y cobrar"}</h4>${pay}`}</div>
+ <div class="card"><h3>Enviar al cliente</h3><button class="btn g" data-act="doc" data-t="quote" data-id="${j.id}">Presupuesto</button><button class="btn g" data-act="doc" data-t="report" data-id="${j.id}">Informe de estado</button><button class="btn g" data-act="doc" data-t="receipt" data-id="${j.id}">Recibo</button></div>
+ <div class="card"><button class="btn g s" data-act="togmore">${view.more?"Ocultar":"Más opciones"}</button>
+  ${view.more?`<div class="row"><div><label>Fecha</label><input type="date" value="${j.date}" data-chg="jf" data-id="${j.id}" data-f="date"></div><div><label>Hora</label><input type="time" value="${j.time||""}" data-chg="jf" data-id="${j.id}" data-f="time"></div><div><label>Descuento (€)</label><input type="number" min="0" step="0.5" value="${j.disc||0}" data-chg="jf" data-id="${j.id}" data-f="disc"></div></div>
+  <label>Título</label><input value="${esc(j.title)}" data-chg="jf" data-id="${j.id}" data-f="title"><label>Lista de revisión para</label><select data-chg="jf" data-id="${j.id}" data-f="ctype">${opt(TYPES,j.ctype)}</select>
+  <label>Concepto libre</label><div class="row"><input id="ft_name" placeholder="Concepto"><input id="ft_price" type="number" step="0.5" placeholder="€"><button class="btn f0" data-act="addfree" data-id="${j.id}">＋</button></div>
+  <label>Notas internas</label><textarea rows="2" data-chg="jf" data-id="${j.id}" data-f="notes">${esc(j.notes)}</textarea>
+  ${j.evId?"":`<a class="btn g s" style="text-decoration:none;display:inline-block" target="_blank" rel="noopener" href="${esc(gcalLink(j))}">📅 Añadir a Google Calendar</a>`}<button class="btn r s" data-act="deljob" data-id="${j.id}">Eliminar trabajo</button>`:""}</div>`}
+
+function clientsView(){
+ if(view.bike){const b=B(view.bike);if(b)return bikeDetail(b);view.bike=null}
+ if(view.id){const c=C(view.id);if(c)return clientDetail(c);view.id=null}
+ const q=(view.q||"").toLowerCase();
+ return `<div class="card"><div class="row"><input placeholder="🔍 Buscar cliente" value="${esc(view.q||"")}" data-chg="cq"><button class="btn f0" data-act="togclient">＋ Cliente</button></div>
+ ${view.addc?`<input id="nc_name" placeholder="Nombre" style="margin-top:8px"><div class="row" style="margin-top:8px"><input id="nc_phone" type="tel" placeholder="Teléfono"><input id="nc_email" type="email" placeholder="Email"></div><button class="btn big" data-act="newclient">Guardar cliente</button>`:""}</div>
+ <div class="card">${S.clients.filter(c=>!q||(c.name+c.phone).toLowerCase().includes(q)).map(c=>`<div class="item" data-act="openclient" data-id="${c.id}" style="cursor:pointer"><b>${esc(c.name)}</b><br><small>${esc(c.phone)} · ${S.bikes.filter(b=>b.clientId==c.id).length} bici(s)</small></div>`).join("")||"<small>Sin clientes todavía.</small>"}</div>`}
+function clientDetail(c){return `<button class="btn g" data-act="clientsback">← Clientes</button>
+ <div class="card"><h3>${esc(c.name)}</h3><div class="row"><input value="${esc(c.phone)}" data-chg="cf" data-id="${c.id}" data-f="phone"><input value="${esc(c.email||"")}" data-chg="cf" data-id="${c.id}" data-f="email" placeholder="Email"></div>
+ <a class="btn s" style="text-decoration:none;display:inline-block" href="tel:${esc(c.phone)}">📞 Llamar</a><a class="btn s g" style="text-decoration:none;display:inline-block" target="_blank" rel="noopener" href="https://wa.me/34${esc(normPhone(c.phone))}">💬 WhatsApp</a></div>
+ <div class="card"><h3>Bicis</h3>${S.bikes.filter(b=>b.clientId==c.id).map(b=>`<div class="item row"><div style="flex:3;cursor:pointer" data-act="openbike" data-id="${b.id}">🚲 <b>${esc(bikeLabel(b))}</b><br><small>${esc(b.size||"")}</small></div><button class="btn s f0" data-act="newjobbike" data-id="${b.id}">＋ Trabajo</button></div>`).join("")||"<small>Sin bicis.</small>"}
+ <button class="btn g s" data-act="addbiketo" data-id="${c.id}">＋ Añadir bici</button></div>
+ <div class="card"><details><summary>Notas y eliminar</summary><textarea rows="2" data-chg="cf" data-id="${c.id}" data-f="notes" placeholder="Notas">${esc(c.notes||"")}</textarea><button class="btn r s" data-act="delclient" data-id="${c.id}">Eliminar cliente</button></details></div>`}
+function bikeDetail(b){const c=C(b.clientId),js=S.jobs.filter(j=>j.bikeId==b.id).sort((a,x)=>x.date.localeCompare(a.date));
+ return `<button class="btn g" data-act="bikeback">← ${esc(c?c.name:"Cliente")}</button>
+ <div class="card"><h3>🚲 ${esc(bikeLabel(b))}</h3>${b.photo?`<img src="${b.photo}" style="height:90px;border-radius:8px" alt="">`:""}
+ <div class="row"><select data-chg="bf" data-id="${b.id}" data-f="type">${opt(TYPES,b.type)}</select><input value="${esc(b.brand||"")}" data-chg="bf" data-id="${b.id}" data-f="brand" placeholder="Marca / modelo"></div>
+ <div class="row" style="margin-top:8px"><input value="${esc(b.size||"")}" data-chg="bf" data-id="${b.id}" data-f="size" placeholder="Talla"><input value="${esc(b.serial||"")}" data-chg="bf" data-id="${b.id}" data-f="serial" placeholder="Nº de serie"></div>
+ <button class="btn big" data-act="newjobbike" data-id="${b.id}">＋ Nuevo trabajo con esta bici</button>
+ <details><summary>Componentes, foto y eliminar</summary><textarea rows="2" data-chg="bf" data-id="${b.id}" data-f="comps" placeholder="Componentes">${esc(b.comps||"")}</textarea><label class="btn g s" style="display:inline-block">📷 Foto<input type="file" accept="image/*" class="hide" data-chg="bphoto" data-id="${b.id}"></label><button class="btn r s" data-act="delbike" data-id="${b.id}">Eliminar bici</button></details></div>
+ <div class="card"><h3>Historial</h3>${js.map(jobRow).join("")||"<small>Sin intervenciones.</small>"}</div>`}
+
+/* ===== Stock: pensado para usarlo en segundos ===== */
+const tile=p=>`<div class="tile ${p.stock<=p.min?"low":""}"><div data-act="pexp" data-id="${p.id}" style="cursor:pointer"><b>${esc(p.name)}</b><br><small>${money(p.price)}${p.stock<=p.min?' · <span class="err">pocas</span>':""}</small></div><div class="qty"><button data-act="use" data-id="${p.id}">−</button><b>${p.stock}</b><button data-act="stk" data-id="${p.id}" data-d="1">+</button></div></div>`;
+function stockView(){if(view.recv)return recvView();
+ const q=(view.sq||"").trim(),ql=q.toLowerCase(),low=S.parts.filter(p=>p.stock<=p.min),top=!q&&!view.low?topParts():[];
+ const l=S.parts.filter(p=>(!q||p.name.toLowerCase().includes(ql))&&(!view.low||p.stock<=p.min)&&!top.includes(p)).sort((a,b)=>(a.stock<=a.min?0:1)-(b.stock<=b.min?0:1)||a.name.localeCompare(b.name));
+ const exact=S.parts.some(p=>p.name.toLowerCase()==ql);
+ return `<div class="card"><input placeholder="🔍 Escribe la pieza…" value="${esc(view.sq||"")}" data-chg="sq">
+ ${q&&!exact?`<button class="btn big" data-act="quickpart" data-n="${esc(q)}">＋ Crear «${esc(q)}»</button>`:""}
+ <div class="row" style="margin-top:6px"><button class="btn f0" data-act="recvview">📥 Llegó pedido</button><button class="btn g f0" data-act="togaddp">＋ Pieza con precio</button></div>
+ <div style="margin-top:6px"><button class="chip ${!view.low?"on":""}" data-act="slow" data-v="0">Todas (${S.parts.length})</button><button class="chip ${view.low?"on":""}" data-act="slow" data-v="1">⚠ Faltan (${low.length})</button></div>
+ ${view.addp?`<div class="row" style="margin-top:8px"><input id="np_name" placeholder="Nombre"><input id="np_price" type="number" step="0.5" inputmode="decimal" placeholder="Precio €"><input id="np_stock" type="number" inputmode="numeric" placeholder="Cantidad"></div><button class="btn big" data-act="addprt">Guardar pieza</button>`:""}</div>
+ ${top.length?`<div class="card"><h3>⚡ Más usadas</h3><div class="tiles">${top.map(tile).join("")}</div></div>`:""}
+ <div class="card">${top.length?"<h3>Resto</h3>":""}${l.map(p=>`<div class="item" style="${p.stock<=p.min?"background:#fff7e6;margin:0 -8px;padding:9px 8px":""}"><div class="row" style="flex-wrap:nowrap"><div style="flex:2;cursor:pointer" data-act="pexp" data-id="${p.id}"><b>${esc(p.name)}</b><br><small>${money(p.price)}${p.stock<=p.min?' · <span class="err">pocas</span>':""}</small></div>
+  <div class="qty f0"><button data-act="use" data-id="${p.id}">−</button><input type="number" min="0" inputmode="numeric" value="${p.stock}" data-chg="stk" data-id="${p.id}"><button data-act="stk" data-id="${p.id}" data-d="1">+</button></div></div>
+  ${view.pexp==p.id?`<div class="row" style="margin-top:6px"><div><small>Precio €</small><input type="number" step="0.5" value="${p.price}" data-chg="pf" data-id="${p.id}" data-f="price"></div><div><small>Coste €</small><input type="number" step="0.5" value="${p.cost}" data-chg="pf" data-id="${p.id}" data-f="cost"></div><div><small>Avisar si ≤</small><input type="number" value="${p.min}" data-chg="pf" data-id="${p.id}" data-f="min"></div></div><button class="btn r s" data-act="delprt" data-id="${p.id}">Borrar pieza</button>`:""}</div>`).join("")||(top.length?"":"<small>No hay piezas.</small>")}</div>
+ <small>Pulsa − al gastar una pieza: se apunta al momento y puedes deshacerlo. Al terminar un trabajo con esa pieza el stock baja solo. Toca el nombre para editar precio o aviso.</small>
+ ${low.length?`<button class="btn big" data-act="copybuy" style="margin-top:10px">📋 Copiar lista de compra (${low.length})</button>`:""}`}
+function recvView(){const low=S.parts.filter(p=>p.stock<=p.min);if(!view.rl)view.rl=Object.fromEntries(low.map(p=>[p.id,{q:Math.max(1,p.min*2-p.stock),c:p.cost||0}]));
+ const ids=Object.keys(view.rl).filter(id=>P(id)),tot=ids.reduce((a,id)=>a+view.rl[id].q*view.rl[id].c,0);
+ return `<button class="btn g" data-act="recvback">← Stock</button><div class="card"><h3>📥 Llegó un pedido</h3><small>Ajusta cantidad y lo que pagaste por unidad. Se suma al stock y se apunta como gasto.</small><input id="rv_s" placeholder="Proveedor (opcional)" style="margin-top:8px">
+ ${ids.map(id=>{const p=P(id),r=view.rl[id];return `<div class="item"><div class="row" style="flex-wrap:nowrap"><div style="flex:2"><b>${esc(p.name)}</b><br><small>ahora ${p.stock}</small></div><div class="qty f0"><button data-act="rq" data-id="${id}" data-d="-1">−</button><b>${r.q}</b><button data-act="rq" data-id="${id}" data-d="1">+</button></div><div class="f0" style="width:84px"><small>€/ud</small><input type="number" step="0.01" inputmode="decimal" value="${r.c}" data-chg="rc" data-id="${id}"></div></div></div>`}).join("")||"<small>No hay piezas bajas. Añade las que han llegado:</small>"}
+ <select data-chg="raddp" style="margin-top:8px"><option value="">＋ Añadir otra pieza…</option>${S.parts.filter(p=>!view.rl[p.id]).map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("")}</select>
+ <div class="total"><span>Total pedido</span><span>${money(tot)}</span></div><button class="btn big" data-act="recvok">Confirmar entrada</button></div>`}
+
+/* ===== Dinero ===== */
+function moneyView(){const m=view.m||ymd(new Date()).slice(0,7),s=mstats(m),p=mstats(mshift(m,-1)),dl=(a,b)=>{const d=a-b;return d==0?"":`${d>0?"▲":"▼"} ${money(Math.abs(d))} vs mes anterior`};
+ const cat=view.cat||"Piezas",maxC=Math.max(1,...Object.values(s.byC)),ev=[];for(let k=5;k>=0;k--){const mm=mshift(m,-k),x=mstats(mm);ev.push({m:mm,I:x.I,G:x.G})}const mx=Math.max(1,...ev.map(x=>Math.max(x.I,x.G)));
+ const unpaid=S.jobs.filter(j=>j.status=="Terminado"&&!j.paid).reduce((a,j)=>a+jobTotals(j).total,0);
+ return `<div class="row" style="margin-bottom:8px"><button class="btn g f0" data-act="mm" data-d="-1">‹</button><h3 style="text-align:center;margin:0;text-transform:capitalize">${mname(m)}</h3><button class="btn g f0" data-act="mm" data-d="1">›</button></div>
+ <div class="kpis"><div class="kpi"><small>Has ganado</small><b class="ok">${money(s.I)}</b></div><div class="kpi"><small>Has gastado</small><b class="err">${money(s.G)}</b></div><div class="kpi"><small>Te queda</small><b>${money(s.net)}</b></div></div>
+ <small>${dl(s.net,p.net)}${unpaid?` · Pendiente de cobrar: ${money(unpaid)}`:""}</small>
+ <div class="card" style="margin-top:10px"><h3>Añadir gasto</h3><small>Un toque en un habitual lo guarda. Las compras de piezas se apuntan solas desde Stock › Llegó pedido.</small><br>
+  ${expTemplates().map(x=>`<button class="chip" data-act="exptpl" data-c="${esc(x.concept)}" data-k="${esc(x.cat)}" data-a="${x.amount}">${esc(x.concept)}${x.amount?" · "+money(x.amount):""}</button>`).join("")}
+  <details ${view.exc||view.exa?"open":""}><summary>Otro gasto</summary><div style="margin-top:6px">${CATS.map(k=>`<button class="chip ${cat==k?"on":""}" data-act="catsel" data-k="${esc(k)}">${k}</button>`).join("")}</div>
+  <div class="row" style="margin-top:8px"><input id="ex_a" type="number" step="0.01" inputmode="decimal" placeholder="Importe €" value="${esc(view.exa||"")}"><input id="ex_c" placeholder="Concepto (opcional)" value="${esc(view.exc||"")}"></div>
+  <label class="btn g s" style="display:inline-block">📷 Foto del ticket<input type="file" accept="image/*" capture="environment" class="hide" data-chg="exphoto"></label> <small>${view.expPhoto?"foto adjunta ✓":""}</small>
+  <button class="btn big" data-act="addexp">Guardar gasto</button></details></div>
+ <div class="card"><h3>En qué has gastado</h3>${Object.entries(s.byC).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div><small>${esc(k)} · ${money(v)}</small><div class="bar"><i style="width:${v/maxC*100}%;background:#b91c1c"></i></div></div>`).join("")||"<small>Sin gastos este mes.</small>"}
+  ${s.ex.map(e=>`<div class="row item"><div style="flex:3">${esc(e.concept)} <small>${fdate(e.date)} · ${esc(e.cat)}${e.photo?" · 📷":""}</small></div><div class="f0">${money(e.amount)}</div><button class="btn r s f0" data-act="delexp" data-id="${e.id}">✕</button></div>`).join("")}
+  ${s.fx.map(f=>`<div class="row item"><div style="flex:3">🔁 ${esc(f.concept)} <small>fijo mensual · ${esc(f.cat)}</small></div><div class="f0">${money(f.amount)}</div><button class="btn r s f0" data-act="delfx" data-id="${f.id}">✕</button></div>`).join("")}
+  <details ${view.fxc?"open":""}><summary>＋ Gasto fijo mensual</summary><div>${[["Cuota de autónomo","Autónomo y gestoría"],["Gestoría","Autónomo y gestoría"],["Seguro furgoneta","Seguros"],["Móvil y web","Otros"]].map(([c,k])=>`<button class="chip" data-act="fxtpl" data-c="${c}" data-k="${k}">${c}</button>`).join("")}</div><div class="row" style="margin-top:6px"><input id="fx_c" placeholder="Concepto" value="${esc(view.fxc||"")}"><input id="fx_a" type="number" step="0.01" inputmode="decimal" placeholder="€ al mes"></div><button class="btn s" data-act="addfx">Guardar gasto fijo</button><br><small>Se cuenta en todos los meses desde ${mname(m)} en adelante.</small></details></div>
+ <div class="card"><h3>Lo que has ganado</h3>${s.n} trabajo${s.n==1?"":"s"} cobrado${s.n==1?"":"s"}${s.n?` · ticket medio ${money(s.I/s.n)}`:""}${Object.entries(s.byM).map(([k,v])=>`<div><small>${esc(k)} · ${money(v)}</small></div>`).join("")}</div>
+ <div class="card"><h3>Últimos 6 meses</h3>${ev.map(x=>`<div style="margin:6px 0"><small>${mname(x.m)} · ganado ${money(x.I)} · gastado ${money(x.G)} · <b>${money(x.I-x.G)}</b></small><div class="bar"><i style="width:${x.I/mx*100}%"></i></div><div class="bar" style="margin-top:2px"><i style="width:${x.G/mx*100}%;background:#b91c1c"></i></div></div>`).join("")}</div>
+ <div class="card"><details><summary>Más datos del mes</summary><p>IVA incluido en tus ventas: <b>${money(s.iva)}</b><br><small>No es lo que debes pagar: faltaría restar el IVA de tus compras. Consúltalo con tu gestor.</small></p>
+  <p>Coste de las piezas usadas: ${money(s.parts)}<br>Horas cronometradas: ${s.hrs.toFixed(1)} h${s.hrs>0.2?` · ingreso por hora: ${money((s.I-s.iva)/s.hrs)}/h (objetivo ${S.set.target} €/h)`:""}</p></details>
+  <button class="btn" data-act="doc" data-t="month" data-id="${m}">📄 Informe del mes</button><button class="btn g" data-act="copymonth" data-id="${m}">Copiar resumen</button><button class="btn g" data-act="csvmonth" data-id="${m}">CSV</button></div>`}
+
+/* ===== Avanzado (oculto tras ⚙) ===== */
+const HUB=[["web","🌐","Web y calendario","Conexión, Google Calendar automático, copia diaria y días de zona"],["calc","🧮","Calculadoras y tablas","Cadena, presión, desarrollo, radios, pares de apriete y compatibilidad"],["tarifas","💲","Tarifas y ajustes","Precios de mano de obra, IVA, datos del taller y objetivo €/h"],["mant","🔮","Mantenimiento y pasaporte QR","Desgaste previsto por bici y página pública con QR"],["datos","🗂","Datos y copias","Copia de seguridad, restaurar y exportar a CSV"]];
+function advView(){if(!view.sec)return `<h3>Avanzado</h3>`+HUB.map(([k,e,t,d])=>`<div class="card hub" data-act="sec" data-s="${k}"><span>${e}</span><div><b>${t}</b><br><small>${d}</small></div></div>`).join("");
+ const back=`<button class="btn g" data-act="advback">← Avanzado</button>`;
+ return back+({calc:calcView,tarifas:tarifasView,mant:mantView,web:webView,datos:datosView}[view.sec])()}
+function tarifasView(){return `<div class="card"><h3>Tarifas de mano de obra</h3><table><tr><th>Tarea</th><th>€</th><th>min</th><th></th></tr>${S.labor.map(l=>`<tr><td><input value="${esc(l.name)}" data-chg="lf" data-id="${l.id}" data-f="name"></td><td><input type="number" step="0.5" value="${l.price}" data-chg="lf" data-id="${l.id}" data-f="price"></td><td><input type="number" value="${l.min}" data-chg="lf" data-id="${l.id}" data-f="min"></td><td><button class="btn r s" data-act="dellab" data-id="${l.id}">✕</button></td></tr>`).join("")}</table>
+ <div class="row" style="margin-top:8px"><input id="nl_name" placeholder="Nueva tarea"><input id="nl_price" type="number" placeholder="€"><input id="nl_min" type="number" placeholder="min"><button class="btn f0" data-act="addlab2">＋</button></div><small>Precios de ejemplo: ajústalos con Roberto. Al apuntar en Calendar «María - revisión», la app asocia la tarea cuyo nombre coincida.</small></div>
+ <div class="card"><h3>Datos del taller</h3><div class="row"><input value="${esc(S.set.name)}" data-chg="sf" data-f="name" placeholder="Nombre"><input value="${esc(S.set.nif)}" data-chg="sf" data-f="nif" placeholder="NIF"></div><div class="row" style="margin-top:8px"><input value="${esc(S.set.phone)}" data-chg="sf" data-f="phone" placeholder="Teléfono"><div><small>IVA %</small><input type="number" value="${S.set.iva}" data-chg="sf" data-f="iva"></div><div><small>Objetivo €/h</small><input type="number" value="${S.set.target}" data-chg="sf" data-f="target"></div></div><small>Los precios llevan IVA incluido. Los recibos son informativos y no sustituyen a una factura oficial.</small></div>`}
+function mantView(){const b=B(view.mb)||S.bikes[0],cd=S.set.cond;if(!b)return `<div class="card"><small>Primero crea una bici en Clientes.</small></div>`;const PR=predictAll(b);
+ return `<div class="card"><h3>Mantenimiento previsto</h3><select data-chg="mb">${opt(S.bikes,b.id,x=>[x.id,`${(C(x.clientId)||{}).name||"?"} · ${bikeLabel(x)}`])}</select>
+ <div class="row" style="margin-top:8px"><div><label>km por semana</label><input type="number" min="1" value="${b.kmWeek||40}" data-chg="bf" data-id="${b.id}" data-f="kmWeek" data-n="1"></div><div><label>Uso</label><select data-chg="bf" data-id="${b.id}" data-f="use">${opt(Object.keys(cd.use),b.use||"Mixto")}</select></div><div><label>Lluvia / barro</label><select data-chg="bf" data-id="${b.id}" data-f="wet">${opt(Object.keys(cd.wet),b.wet||"Normal")}</select></div></div>
+ <table><tr><th>Componente</th><th>Último cambio</th><th>Desgaste</th><th>Toca</th></tr>${PR.map(p=>`<tr><td>${EMO[p.state]} ${esc(p.name)}</td><td><input type="date" value="${p.last||""}" data-chg="blast" data-id="${b.id}" data-k="${p.k}"></td><td>${p.state=="n"?"<small>sin datos</small>":`<div class="bar"><i style="width:${Math.min(100,p.pct*100)}%;background:${p.state=="r"?"#b91c1c":p.state=="a"?"#d97706":"var(--c)"}"></i></div><small>${Math.round(p.pct*100)} %</small>`}</td><td><small>${p.due?fdate(p.due):"—"}</small></td></tr>`).join("")}</table>
+ <small>El último cambio se detecta solo en trabajos terminados (por el nombre de la tarea o pieza) o se introduce a mano.</small></div>
+ <div class="card"><h3>Pasaporte con QR</h3><small>Página pública de la bici, sin teléfono ni dirección. Necesita conexión para publicarse.</small>
+ <label><input type="checkbox" ${b.showSerial?"checked":""} data-chg="bf" data-id="${b.id}" data-f="showSerial"> Mostrar el nº de serie en la página pública</label>
+ <button class="btn" data-act="pubpass" data-id="${b.id}">${b.passToken?"Actualizar y ver QR":"Publicar y generar QR"}</button><button class="btn g" data-act="doc" data-t="passport" data-id="${b.id}">Pasaporte imprimible</button><div id="pubmsg"></div></div>
+ <div class="card"><details><summary>Ajustar vidas útiles y condiciones</summary><small>Valores de partida orientativos: calíbralos. 0 = sin límite por ese criterio. «Detectar por» son palabras separadas por | que buscan el último cambio en los trabajos.</small>
+ <table><tr><th>Componente</th><th>km</th><th>meses</th><th>Detectar por</th></tr>${Object.entries(S.set.life).map(([k,L])=>`<tr><td>${esc(L.n)}</td><td><input type="number" value="${L.km}" data-chg="life" data-k="${k}" data-f="km"></td><td><input type="number" value="${L.mo}" data-chg="life" data-k="${k}" data-f="mo"></td><td><input value="${esc(L.kw)}" data-chg="life" data-k="${k}" data-f="kw"></td></tr>`).join("")}</table>
+ <label>Multiplicador por uso (1 = normal; menor = se desgasta antes)</label><div class="row">${Object.entries(cd.use).map(([k,v])=>`<div><small>${esc(k)}</small><input type="number" step="0.05" value="${v}" data-chg="cond" data-g="use" data-k="${esc(k)}"></div>`).join("")}</div>
+ <label>… por lluvia / barro</label><div class="row">${Object.entries(cd.wet).map(([k,v])=>`<div><small>${esc(k)}</small><input type="number" step="0.05" value="${v}" data-chg="cond" data-g="wet" data-k="${esc(k)}"></div>`).join("")}</div><label>… bici eléctrica</label><input type="number" step="0.05" value="${cd.ebike}" data-chg="cond" data-g="ebike"></details></div>`}
+function webView(){const c=S.set.sb,zs=new Set(S.zones);
+ return `<div class="card"><h3>Conexión con la web</h3><small>Mismo proyecto de Supabase y usuario de Roberto. La contraseña se pide una sola vez en este móvil y después la sesión se renueva sola.</small>
+ <input placeholder="URL de Supabase" value="${esc(c.url)}" data-chg="sbf" data-f="url"><input placeholder="Clave pública (anon)" value="${esc(c.key)}" data-chg="sbf" data-f="key" style="margin-top:8px"><div class="row" style="margin-top:8px"><input type="email" placeholder="Email de Roberto" value="${esc(c.email)}" data-chg="sbf" data-f="email"><input placeholder="Web pública (https://…)" value="${esc(c.site)}" data-chg="sbf" data-f="site"></div>
+ <button class="btn big" data-act="websync">Conectar y sincronizar ahora</button><div id="webmsg"><small>${S.outbox.length} cambio(s) pendientes · ${S.webCitas.length} cita(s) web · ${S.cal.length} evento(s) de calendario${S.calAt?" · última sync "+new Date(S.calAt).toTimeString().slice(0,5):""}</small></div></div>
+ <div class="card"><h3>📅 Google Calendar</h3><small>Lo que Roberto apunta en su calendario aparece solo en «Hoy» y se convierte en trabajo (cliente, bici y tarea se deducen del título: «María - revisión», con el teléfono en la descripción y la dirección en el lugar). Las reservas de la web se meten solas en su calendario. Requiere la función <code>calendario</code> (ver LEEME).</small>
+ <label><input type="checkbox" ${S.set.autoJobs?"checked":""} data-chg="autojobs"> Crear trabajos automáticamente con los eventos de hoy y mañana</label>
+ <small>Se sincroniza al abrir la app y cada 5 minutos.</small></div>
+ <div class="card"><h3>Citas de la web</h3>${S.webCitas.map(x=>{const j=S.jobs.find(y=>y.citaId==x.id);return `<div class="item"><b>${fdate(x.date)} ${x.hour}:00</b> <span class="tag">${esc(x.st)}</span>${x.kind=="empresa"?` <span class="tag">${esc(x.bikes)} bicis</span>`:""}<br>${esc(x.name)} · ${esc(x.svc)}<br><small>${esc(x.addr)}, ${esc(x.town)} · ${esc(x.phone)}</small><br>${j?`<button class="btn g s" data-act="openjob" data-id="${j.id}">Abrir trabajo</button>`:`<button class="btn s" data-act="cita2job" data-id="${esc(x.id)}">Crear trabajo</button>`}</div>`}).join("")||"<small>Pulsa «Conectar y sincronizar».</small>"}</div>
+ <div class="card"><h3>Días de zona</h3><small>Marca qué municipios atiendes cada día. Sin marcas, la web ofrece todo todos los días.</small>
+ <table><tr><th></th>${[1,2,3,4,5,6].map(d=>`<th>${DOW[d]}</th>`).join("")}</tr>${TOWNS.map(t=>`<tr><td>${esc(t)}</td>${[1,2,3,4,5,6].map(d=>`<td><input type="checkbox" ${zs.has(d+"|"+t)?"checked":""} data-chg="zone" data-k="${d}|${esc(t)}"></td>`).join("")}</tr>`).join("")}</table>
+ <button class="btn" data-act="pubzones">Publicar zonas en la web</button><div id="zmsg"></div></div>`}
+function datosView(){return `<div class="card"><h3>Copia de seguridad</h3><small>${S.autoBk?"Copia automática diaria en la web: última "+fdate(S.autoBk)+" (sin fotos).":"Sin conexión a la web: descarga una copia cada semana."}</small><br><button class="btn" data-act="backup">Descargar copia completa (JSON)</button><label class="btn g" style="display:inline-block">Restaurar copia<input type="file" accept=".json" class="hide" data-chg="restore"></label></div>
+ <div class="card"><h3>Exportar</h3><button class="btn g" data-act="csvjobs">Trabajos CSV</button><button class="btn g" data-act="csvexp">Gastos CSV</button><button class="btn g" data-act="csvinv">Inventario CSV</button></div>`}
+
+function calcView(){const k=S.set.calc,cw=k.chain,tp=k.tire,dv=k.dev,sp=k.spoke;
+ const num=(p,v,st="any")=>`<input type="number" step="${st}" value="${v}" data-chg="cc" data-p="${p}">`;
+ return `<div class="card"><h3>Desgaste de cadena</h3><div class="row"><div><label>Longitud medida de ${cw.pitches} pasos (mm)</label><input id="cw_l" type="number" step="0.1" value="${r2(cw.pitches*cw.pitch+.7)}"></div><div><label>Transmisión</label><select id="cw_t"><option value="thr1">11–13 velocidades (${cw.thr1} %)</option><option value="thr2">1–10 velocidades (${cw.thr2} %)</option><option value="thr3">Monomarcha (${cw.thr3} %)</option></select></div></div><div id="cw_r"></div>
+ <details><summary>⚙ Cómo se calcula</summary><div class="row"><div><label>Pasos medidos</label><select data-chg="cc" data-p="chain.pitches" data-t="n">${opt([24,50,100],cw.pitches)}</select></div><div><label>Paso de cadena (mm)</label>${num("chain.pitch",cw.pitch,"0.01")}</div><div><label>Aviso «Vigilar» desde (% del límite)</label>${num("chain.warn",cw.warn)}</div></div><div class="row"><div><label>Límite 11–13 v (%)</label>${num("chain.thr1",cw.thr1,"0.05")}</div><div><label>Límite 1–10 v (%)</label>${num("chain.thr2",cw.thr2,"0.05")}</div><div><label>Límite monomarcha (%)</label>${num("chain.thr3",cw.thr3,"0.05")}</div></div><button class="btn g s" data-act="calcreset" data-p="chain">Restablecer</button></details>
+ <small>Referencia nueva: ${r2(cw.pitches*cw.pitch)} mm. Mide la cadena tensa y en varios tramos; el más desgastado manda.</small></div>
+ <div class="card"><h3>Presión de neumáticos (orientativa)</h3><div class="row"><div><label>Masa real: ciclista + bici + equipo (kg)</label><input id="tp_n" type="number" value="90"></div></div><label><input type="checkbox" id="tp_t"> Con cámara</label><div id="tp_r"></div>
+ <details><summary>⚙ Cómo se calcula</summary><div class="row"><div><label>Presión de referencia (bar)</label>${num("tire.pref",tp.pref,"0.1")}</div><div><label>Masa de referencia (kg)</label>${num("tire.mref",tp.mref)}</div><div><label>Exponente (1 = proporcional)</label>${num("tire.exp",tp.exp,"0.05")}</div></div><div class="row"><div><label>Extra con cámara, mín (bar)</label>${num("tire.tubeLo",tp.tubeLo,"0.05")}</div><div><label>Extra con cámara, máx (bar)</label>${num("tire.tubeHi",tp.tubeHi,"0.05")}</div></div><label><input type="checkbox" data-chg="cc" data-p="tire.split" ${tp.split?"checked":""}> Separar delantera / trasera</label><div class="row"><div><label>Peso sobre la rueda delantera (%)</label>${num("tire.front",tp.front)}</div></div><button class="btn g s" data-act="calcreset" data-p="tire">Restablecer</button></details>
+ <small>Escala la presión de referencia con la masa total. No superes nunca el máximo del neumático ni de la llanta.</small></div>
+ <div class="card"><h3>Desarrollo y velocidad</h3><div class="row"><input id="dv_c" type="number" placeholder="Plato" value="46"><input id="dv_p" type="number" placeholder="Piñón" value="17"><input id="dv_b" type="number" placeholder="BSD mm" value="622"><input id="dv_w" type="number" placeholder="Ancho mm" value="28"><input id="dv_k" type="number" placeholder="rpm" value="90"></div><small>BSD: 622 (700c/29″), 584 (27,5″), 559 (26″).</small><div id="dv_r"></div>
+ <details><summary>⚙ Cómo se calcula</summary><label>Perímetro de la rueda</label><select data-chg="cc" data-p="dev.mode">${opt([["formula","Fórmula: π × (BSD + 2 × ancho)"],["manual","Perímetro medido a mano"]],dv.mode,x=>x)}</select><label>Perímetro medido (mm)</label>${num("dev.circ",dv.circ)}<button class="btn g s" data-act="calcreset" data-p="dev">Restablecer</button></details></div>
+ <div class="card"><h3>Longitud de radios</h3><div class="row"><div><label>ERD llanta (mm)</label><input id="sp_e" type="number" step="0.1" value="602"></div><div><label>PCD agujeros del buje (mm)</label><input id="sp_p" type="number" step="0.1" value="39"></div><div><label>Nº de radios</label><input id="sp_n" type="number" value="36"></div><div><label>Cruces</label><input id="sp_x" type="number" value="3"></div></div><div class="row"><div><label>Centro–brida izq. (mm)</label><input id="sp_dl" type="number" step="0.1" value="30"></div><div><label>Centro–brida dcha. (mm)</label><input id="sp_dr" type="number" step="0.1" value="30"></div></div><div id="sp_r"></div>
+ <details><summary>⚙ Cómo se calcula</summary><div class="row"><div><label>Ø agujero de brida (mm)</label>${num("spoke.hole",sp.hole,"0.1")}</div><div><label>Corrección (mm)</label>${num("spoke.offset",sp.offset,"0.1")}</div><div><label>Redondeo al comprar</label><select data-chg="cc" data-p="spoke.step" data-t="n">${opt([0.5,1,2],sp.step)}</select></div></div><label><input type="checkbox" data-chg="cc" data-p="spoke.sub" ${sp.sub?"checked":""}> Restar medio agujero de brida (fórmula estándar)</label><button class="btn g s" data-act="calcreset" data-p="spoke">Restablecer</button></details></div>
+ <div class="card"><h3>Pares de apriete</h3><div class="row"><input id="tq_q" placeholder="Buscar (biela, potencia, Shimano…)"><div class="f0"><input id="cv_n" type="number" step="0.1" placeholder="Nm" style="width:90px"></div><div class="f0" id="cv_r" style="min-width:90px"></div></div>
+ <table id="tq_t"></table><small>Valores de referencia de Park Tool (<i>Torque Specifications and Concepts</i>). Manda siempre el valor del fabricante o el grabado en la pieza. Las filas con ⭐ son tuyas.</small>
+ <details><summary>＋ Añadir mi propio par</summary><div class="row"><input id="tq_c" placeholder="Componente"><input id="tq_b" placeholder="Marca"><input id="tq_a" type="number" step="0.1" placeholder="Nm mín"><input id="tq_z" type="number" step="0.1" placeholder="Nm máx"><button class="btn f0" data-act="addtq">＋</button></div></details></div>
+ <div class="card"><h3>Compatibilidad</h3><details open><summary>Separación entre piñones del cassette</summary><table><tr><th>Sistema</th><th>mm</th></tr>${PITCH.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join("")}</table><small>Cuantas más velocidades, más juntos van los piñones: la cadena debe ser de las mismas velocidades que el cassette y el cambio. Una cadena de 11 velocidades es demasiado ancha para uno de 12. Fuente: BikeGremlin.</small></details>
+ <details><summary>Anchuras de buje y ejes</summary><table><tr><th>Delantero (mm)</th><th>Trasero (mm)</th><th>Eje</th><th>Uso típico</th></tr>${HUBS.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join("")}</table><small>Una rueda de eje pasante se puede adaptar a cierre rápido, pero no al revés. Mide entre las punteras para distinguir 135 de 150 mm. Fuente: Retrograde.</small></details></div>`}
+function runCalc(){const v=id=>+$("#"+id)?.value;if(!$("#cw_l"))return;const k=S.set.calc;
+ const base=k.chain.pitches*k.chain.pitch,w=chainWear(v("cw_l"),base),th=k.chain[$("#cw_t").value],s=w>=th?["err","Sustituir"]:w>=th*k.chain.warn/100?["","Vigilar"]:["ok","Correcta"];
+ $("#cw_r").innerHTML=`<p>Desgaste: <b>${w.toFixed(2)} %</b> (límite ${th} %) → <b class="${s[0]}">${s[1]}</b></p>`;
+ const tb=$("#tp_t").checked,t=tirePress(k.tire.pref,k.tire.mref,v("tp_n"),k.tire.exp,tb,k.tire.tubeLo,k.tire.tubeHi),f=x=>x.toFixed(1);
+ let out=`Presión: <b>${f(t.p)} bar</b>${tb?` (con cámara ${f(t.lo)}–${f(t.hi)} bar)`:""} · ${(t.p*14.5038).toFixed(0)} psi`;
+ if(k.tire.split){const fr=k.tire.front/100*2,rr=(1-k.tire.front/100)*2;out=`Delantera <b>${f(t.lo*fr)}${tb?"–"+f(t.hi*fr):""} bar</b> · Trasera <b>${f(t.lo*rr)}${tb?"–"+f(t.hi*rr):""} bar</b> (reparto ${k.tire.front}/${100-k.tire.front} %)`}
+ $("#tp_r").innerHTML=`<p>${out}</p>`;
+ const d=develop(v("dv_c"),v("dv_p"),v("dv_b"),v("dv_w"),v("dv_k"),k.dev.mode=="manual"?k.dev.circ:0);$("#dv_r").innerHTML=`<p>Relación ${d.ratio.toFixed(2)} · ${d.gi.toFixed(1)} pulgadas de desarrollo · <b>${d.dev.toFixed(2)} m</b> por pedalada · <b>${d.kmh.toFixed(1)} km/h</b> a ${v("dv_k")} rpm</p>`;
+ const a={erd:v("sp_e"),pcd:v("sp_p"),h:k.spoke.hole,n:v("sp_n"),x:v("sp_x"),sub:k.spoke.sub,off:k.spoke.offset},L=spokeLen({...a,d:v("sp_dl")}),R=spokeLen({...a,d:v("sp_dr")}),st=k.spoke.step,rd=x=>Math.round(x/st)*st;
+ $("#sp_r").innerHTML=isFinite(L+R)?`<p>Izquierda: <b>${L.toFixed(1)} mm</b> (pedir ${rd(L)}) · Derecha: <b>${R.toFixed(1)} mm</b> (pedir ${rd(R)})</p><small>Comprueba con las medidas reales antes de comprar.</small>`:"<small>Rellena todos los campos.</small>";
+ const q=($("#tq_q").value||"").toLowerCase(),all=TORQUE.map(r=>({r,own:false})).concat(S.torque.map(x=>({r:["Propios",x.comp,x.brand,x.min,x.max],own:true,id:x.id}))),rows=all.filter(o=>!q||o.r.join(" ").toLowerCase().includes(q));
+ $("#tq_t").innerHTML="<tr><th>Componente</th><th>Marca</th><th>Nm</th><th>in·lb</th></tr>"+rows.map(o=>{const r=o.r,nm=r[3]==r[4]?`${r[3]}`:`${r[3]}–${r[4]}`,il=r[3]==r[4]?`${Math.round(r[3]*8.851)}`:`${Math.round(r[3]*8.851)}–${Math.round(r[4]*8.851)}`;return `<tr><td>${o.own?"⭐ ":""}${esc(r[1])}<br><small>${esc(r[0])}</small></td><td>${esc(r[2])}</td><td>${nm}</td><td>${il}${o.own?` <a href="#" data-act="deltq" data-id="${o.id}">✕</a>`:""}</td></tr>`}).join("");
+ const n=+$("#cv_n").value;$("#cv_r").textContent=n?`${(n*8.851).toFixed(0)} in·lb`:""}
+document.addEventListener("input",e=>{if(e.target.closest("#app")&&view.tab=="adv"&&view.sec=="calc"&&!e.target.dataset.chg)runCalc()});
+
+function qrMatrix(text){
+ const M=[10,16,26,18,24,16,18,22,22,26],NB=[1,1,1,2,2,4,4,4,5,5];
+ const data=Array.from(new TextEncoder().encode(text));
+ const rawMods=v=>{let r=(16*v+128)*v+64;if(v>=2){const n=Math.floor(v/7)+2;r-=(25*n-10)*n-55;if(v>=7)r-=36}return r};
+ let ver=0,cap=0;
+ for(let v=1;v<=10;v++){const dc=Math.floor(rawMods(v)/8)-M[v-1]*NB[v-1],bits=4+(v<10?8:16)+data.length*8;if(bits<=dc*8){ver=v;cap=dc;break}}
+ if(!ver)throw new Error("Texto demasiado largo para el QR");
+ const bits=[];const put=(val,n)=>{for(let i=n-1;i>=0;i--)bits.push((val>>>i)&1)};
+ put(4,4);put(data.length,ver<10?8:16);data.forEach(b=>put(b,8));
+ put(0,Math.min(4,cap*8-bits.length));while(bits.length%8)bits.push(0);
+ for(let p=0xEC;bits.length<cap*8;p^=0xEC^0x11)put(p,8);
+ const cw=[];for(let i=0;i<bits.length;i+=8)cw.push(parseInt(bits.slice(i,i+8).join(""),2));
+ const mul=(x,y)=>{let z=0;for(let i=7;i>=0;i--){z=(z<<1)^((z>>>7)*0x11D);z^=((y>>>i)&1)*x}return z&255};
+ const ecl=M[ver-1],nb=NB[ver-1],raw=Math.floor(rawMods(ver)/8),nShort=nb-raw%nb,sLen=Math.floor(raw/nb);
+ const div=(()=>{const r=Array(ecl-1).fill(0).concat([1]);let root=1;for(let i=0;i<ecl;i++){for(let j=0;j<r.length;j++){r[j]=mul(r[j],root);if(j+1<r.length)r[j]^=r[j+1]}root=mul(root,2)}return r})();
+ const rs=d=>{const r=Array(ecl).fill(0);for(const b of d){const f=b^r.shift();r.push(0);div.forEach((c,i)=>r[i]^=mul(c,f))}return r};
+ const blocks=[];for(let i=0,k=0;i<nb;i++){const len=sLen-ecl+(i<nShort?0:1),d=cw.slice(k,k+len);k+=len;const e=rs(d);if(i<nShort)d.push(0);blocks.push(d.concat(e))}
+ const all=[];for(let i=0;i<blocks[0].length;i++)blocks.forEach((b,j)=>{if(i!=sLen-ecl||j>=nShort)all.push(b[i])});
+ const size=ver*4+17,m=Array.from({length:size},()=>Array(size).fill(false)),fn=Array.from({length:size},()=>Array(size).fill(false));
+ const set=(x,y,v)=>{m[y][x]=v;fn[y][x]=true};
+ for(let i=0;i<size;i++){set(6,i,i%2==0);set(i,6,i%2==0)}
+ [[3,3],[size-4,3],[3,size-4]].forEach(([x,y])=>{for(let dy=-4;dy<=4;dy++)for(let dx=-4;dx<=4;dx++){const d=Math.max(Math.abs(dx),Math.abs(dy)),xx=x+dx,yy=y+dy;if(xx>=0&&xx<size&&yy>=0&&yy<size)set(xx,yy,d!=2&&d!=4)}});
+ const na=ver==1?0:Math.floor(ver/7)+2,step=na?Math.ceil((ver*4+4)/(na*2-2))*2:0,pos=na?[6]:[];for(let p=size-7;pos.length<na;p-=step)pos.splice(1,0,p);
+ pos.forEach((px,i)=>pos.forEach((py,j)=>{if((i==0&&j==0)||(i==0&&j==na-1)||(i==na-1&&j==0))return;for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++)set(px+dx,py+dy,Math.max(Math.abs(dx),Math.abs(dy))!=1)}));
+ const fmt=mask=>{const d=0<<3|mask;let r=d;for(let i=0;i<10;i++)r=(r<<1)^((r>>>9)*0x537);const b=(d<<10|r)^0x5412,g=i=>((b>>>i)&1)==1;
+  for(let i=0;i<=5;i++)set(8,i,g(i));set(8,7,g(6));set(8,8,g(7));set(7,8,g(8));for(let i=9;i<15;i++)set(14-i,8,g(i));
+  for(let i=0;i<8;i++)set(size-1-i,8,g(i));for(let i=8;i<15;i++)set(8,size-15+i,g(i));set(8,size-8,true)};
+ fmt(0);
+ if(ver>=7){let r=ver;for(let i=0;i<12;i++)r=(r<<1)^((r>>>11)*0x1F25);const b=ver<<12|r;for(let i=0;i<18;i++){const c=((b>>>i)&1)==1,a=size-11+i%3,bb=Math.floor(i/3);set(a,bb,c);set(bb,a,c)}}
+ let k=0;for(let right=size-1;right>=1;right-=2){if(right==6)right=5;for(let vert=0;vert<size;vert++)for(let j=0;j<2;j++){const x=right-j,up=((right+1)&2)==0,y=up?size-1-vert:vert;if(!fn[y][x]&&k<all.length*8){m[y][x]=((all[k>>>3]>>>(7-(k&7)))&1)==1;k++}}}
+ const MASK=[(x,y)=>(x+y)%2==0,(x,y)=>y%2==0,(x,y)=>x%3==0,(x,y)=>(x+y)%3==0,(x,y)=>(Math.floor(x/3)+Math.floor(y/2))%2==0,(x,y)=>x*y%2+x*y%3==0,(x,y)=>(x*y%2+x*y%3)%2==0,(x,y)=>((x+y)%2+x*y%3)%2==0];
+ const apply=mk=>{for(let y=0;y<size;y++)for(let x=0;x<size;x++)if(!fn[y][x]&&MASK[mk](x,y))m[y][x]=!m[y][x]};
+ const pen=()=>{let p=0;for(let t=0;t<2;t++)for(let a=0;a<size;a++){let run=1;for(let b=1;b<size;b++){const c=t?m[b][a]:m[a][b],q=t?m[b-1][a]:m[a][b-1];if(c==q){run++;if(run==5)p+=3;else if(run>5)p++}else run=1}}
+  for(let y=0;y<size-1;y++)for(let x=0;x<size-1;x++)if(m[y][x]==m[y][x+1]&&m[y][x]==m[y+1][x]&&m[y][x]==m[y+1][x+1])p+=3;
+  let dark=0;m.forEach(r=>r.forEach(v=>dark+=v));p+=Math.floor(Math.abs(dark*20-size*size*10)/(size*size))*10;return p};
+ let best=0,bp=1e9;for(let mk=0;mk<8;mk++){apply(mk);fmt(mk);const p=pen();if(p<bp){bp=p;best=mk}apply(mk)}
+ apply(best);fmt(best);return m}
+function qrSvg(text,px=4){const m=qrMatrix(text),n=m.length+8;let d="";m.forEach((r,y)=>r.forEach((v,x)=>{if(v)d+=`M${x+4} ${y+4}h1v1h-1z`}));
+ return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${n} ${n}" width="${n*px}" height="${n*px}" shape-rendering="crispEdges"><rect width="${n}" height="${n}" fill="#fff"/><path d="${d}"/></svg>`}
+
+/* ===== Documentos ===== */
+const shell=(t,body)=>`<div class="sheet"><h2>${esc(S.set.name)}</h2><div class="muted">${esc(S.set.phone)}${S.set.nif?" · NIF "+esc(S.set.nif):""}</div><h3>${t}</h3>${body}</div>`;
+const lines=j=>j.tasks.map(t=>[t.name+(t.qty>1?` ×${t.qty}`:""),t.price*t.qty]).concat(j.used.map(p=>[p.name+(p.qty>1?` ×${p.qty}`:""),p.price*p.qty]));
+function buildMonth(m){const s=mstats(m),tot=j=>jobTotals(j).total,row=(a,b)=>`<tr><td>${a}</td><td style="text-align:right">${b}</td></tr>`;
+ const html=shell("Informe de "+mname(m),`<table>${row("Ingresos cobrados",`<b>${money(s.I)}</b>`)}${row("Gastos",`<b>${money(s.G)}</b>`)}${row("Resultado",`<b>${money(s.net)}</b>`)}${row("IVA incluido en ventas",money(s.iva))}</table>
+  <h4>Ingresos (${s.n})</h4><table>${s.inc.map(j=>`<tr><td>${fdate(j.paidDate)}</td><td>${esc(j.receiptNo)} · ${esc((C((B(j.bikeId)||{}).clientId)||{}).name||"")}</td><td>${esc(j.method)}</td><td style="text-align:right">${money(tot(j))}</td></tr>`).join("")||"<tr><td>Sin ingresos</td></tr>"}</table>
+  <h4>Gastos</h4><table>${s.ex.map(e=>`<tr><td>${fdate(e.date)}</td><td>${esc(e.concept)}</td><td>${esc(e.cat)}</td><td style="text-align:right">${money(e.amount)}</td></tr>`).concat(s.fx.map(f=>`<tr><td>mensual</td><td>${esc(f.concept)}</td><td>${esc(f.cat)}</td><td style="text-align:right">${money(f.amount)}</td></tr>`)).join("")||"<tr><td>Sin gastos</td></tr>"}</table>`);
+ return{html,text:`*${S.set.name} · ${mname(m)}*\nHas ganado: ${money(s.I)} (${s.n} trabajo${s.n==1?"":"s"})\nHas gastado: ${money(s.G)}\nTe queda: ${money(s.net)}`,phone:""}}
+function buildDoc(type,id){
+ if(type=="month")return buildMonth(id);
+ if(type=="passport"){const b=B(id),c=C(b.clientId),js=S.jobs.filter(j=>j.bikeId==b.id&&j.status=="Terminado").sort((a,b)=>b.date.localeCompare(a.date));
+  const sv=predictAll(b).find(p=>p.k=="service"),next=sv&&sv.due||"";
+  const html=shell("Pasaporte de la bici",`<p><b>${esc(bikeLabel(b))}</b> · propietario: ${esc(c?c.name:"")}<br>Talla: ${esc(b.size||"—")} · Nº de serie: ${esc(b.serial||"—")}<br>Componentes: ${esc(b.comps||"—")}</p>${b.photo?`<img src="${b.photo}" style="height:110px" alt="">`:""}<h4>Historial</h4><table>${js.map(j=>`<tr><td>${fdate(j.date)}</td><td>${esc(j.title||"")}<br><small>${esc(lines(j).map(l=>l[0]).join(", "))}</small></td></tr>`).join("")||"<tr><td>Sin intervenciones registradas.</td></tr>"}</table>${next?`<p>Próxima revisión recomendada: <b>${fdate(next)}</b></p>`:""}`);
+  const text=`Pasaporte de la bici ${bikeLabel(b)} (${b.serial?"nº serie "+b.serial:"sin nº serie"})\n`+js.map(j=>`- ${fdate(j.date)}: ${j.title||lines(j).map(l=>l[0]).join(", ")}`).join("\n")+(next?`\nPróxima revisión: ${fdate(next)}`:"");
+  return{html,text,phone:c&&c.phone}}
+ const j=J(id),b=B(j.bikeId),c=C(b.clientId),T=jobTotals(j),head=`<p>${esc(c?c.name:"")} · ${esc(bikeLabel(b))}<br>${fdate(j.date)}${j.title?" · "+esc(j.title):""}</p>`;
+ const tbl=`<table>${lines(j).map(l=>`<tr><td>${esc(l[0])}</td><td style="text-align:right">${money(l[1])}</td></tr>`).join("")}${j.disc>0?`<tr><td>Descuento</td><td style="text-align:right">-${money(j.disc)}</td></tr>`:""}<tr><td><b>Total (IVA ${S.set.iva}% incl.)</b></td><td style="text-align:right"><b>${money(T.total)}</b></td></tr><tr><td><small>Base ${money(T.base)} + IVA ${money(T.iva)}</small></td><td></td></tr></table>`;
+ const ltxt=lines(j).map(l=>`• ${l[0]}: ${money(l[1])}`).join("\n");
+ if(type=="quote")return{html:shell("Presupuesto",head+tbl+`<p>Conforme del cliente: ______________________</p>`),text:`*${S.set.name} · Presupuesto*\n${c?c.name:""} · ${bikeLabel(b)}\n${ltxt}\n*Total: ${money(T.total)}* (IVA incl.)\n¿Te lo confirmo?`,phone:c&&c.phone};
+ if(type=="receipt"){const no=j.receiptNo||"(pendiente de cobro)";return{html:shell("Recibo "+esc(no),head+tbl+`<p>${j.paid?`Pagado el ${fdate(j.paidDate)} · ${esc(j.method||"")}`:"Pendiente de pago"}</p><small>Documento informativo; no sustituye a una factura.</small>`),text:`*${S.set.name} · Recibo ${no}*\n${c?c.name:""} · ${bikeLabel(b)}\n${ltxt}\n*Total: ${money(T.total)}*${j.paid?" · pagado":""}`,phone:c&&c.phone}}
+ const it=checkItems(j.ctype).map(([k,l])=>({l,...(j.check[k]||{s:"n"})})),cn={g:0,a:0,r:0};it.forEach(x=>cn[x.s]!==undefined&&cn[x.s]++);
+ const imp=it.filter(x=>x.s=="r"||x.s=="a").sort((a,b)=>a.s<b.s?1:-1);
+ const html=shell("Informe de estado",head+`<p>🟢 ${cn.g} correctos · 🟡 ${cn.a} a vigilar · 🔴 ${cn.r} urgentes</p><table>${it.filter(x=>x.s!="n").sort((a,b)=>"rag".indexOf(a.s)-"rag".indexOf(b.s)).map(x=>`<tr><td>${EMO[x.s]}</td><td>${esc(x.l)}${x.note?`<br><small>${esc(x.note)}</small>`:""}${x.photo?`<br><img src="${x.photo}" alt="">`:""}</td></tr>`).join("")}</table>${lines(j).length?`<h4>Trabajos y piezas</h4>${tbl}`:""}`);
+ const text=`*${S.set.name} · Informe de estado*\n${c?c.name:""} · ${bikeLabel(b)} · ${fdate(j.date)}\n🟢 ${cn.g} correctos · 🟡 ${cn.a} vigilar · 🔴 ${cn.r} urgentes\n`+imp.map(x=>`${EMO[x.s]} ${x.l}${x.note?": "+x.note:""}`).join("\n")+(lines(j).length?`\n\n${ltxt}\n*Total: ${money(T.total)}*`:"");
+ return{html,text,phone:c&&c.phone}}
+function buildQR(id){const b=B(id),c=C(b.clientId),url=passUrl(b);
+ return{html:shell("Pasaporte digital de la bici",`<p><b>${esc(bikeLabel(b))}</b>${b.size?" · talla "+esc(b.size):""}</p><div style="text-align:center">${qrSvg(url,6)}</div><p style="text-align:center">Escanea para ver el historial de mantenimiento<br><small>${esc(url)}</small></p>`),text:`Pasaporte digital de tu bici ${bikeLabel(b)}: ${url}`,phone:c&&c.phone}}
+function showDoc(){const d=docState.t=="qr"?buildQR(docState.id):buildDoc(docState.t,docState.id);docState.text=d.text;docState.phone=d.phone;$("#doc").innerHTML=`<div class="noprint"><button class="btn g" data-act="closedoc">← Volver</button><button class="btn" data-act="printdoc">Imprimir / PDF</button><button class="btn" data-act="copydoc">Copiar texto</button><button class="btn" data-act="wadoc">WhatsApp</button></div>`+d.html;$("#doc").classList.remove("hide")}
+
+/* ===== Exportar ===== */
+const csv=rows=>"\ufeff"+rows.map(r=>r.map(v=>`"${String(v??"").replace(/"/g,'""')}"`).join(";")).join("\n");
+function download(name,text,mime="text/csv"){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type:mime+";charset=utf-8"}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+const copy=async t=>{try{await navigator.clipboard.writeText(t);toast("Copiado ✔")}catch(e){prompt("Copia el texto:",t)}};
+const compress=f=>new Promise(r=>{if(!f)return r("");const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{const c=document.createElement("canvas"),k=Math.min(1,640/im.width);c.width=im.width*k;c.height=im.height*k;c.getContext("2d").drawImage(im,0,0,c.width,c.height);r(c.toDataURL("image/jpeg",.6))};im.onerror=()=>r("");im.src=fr.result};fr.onerror=()=>r("");fr.readAsDataURL(f)});
+
+/* ===== Acciones ===== */
+const val=id=>($("#"+id)?.value||"").trim();
+function commit(){persist();render()}
+const setMsg=(id,t,cls="")=>{const e=$("#"+id);if(e)e.innerHTML=`<small class="${cls}">${esc(t)}</small>`};
+function addExpense(concept,amount,cat,photo){const e={id:uid(),date:ymd(new Date()),concept,amount:r2(amount),cat};if(photo)e.photo=photo;S.expenses.push(e);persist();render();buzz();toast(`${concept} · ${money(amount)} guardado`,()=>{S.expenses=S.expenses.filter(x=>x.id!=e.id);persist();render()})}
+function finishJob(j,method){if(j.tStart){j.elapsed=(j.elapsed||0)+Date.now()-j.tStart;j.tStart=null}
+ if(j.status!="Terminado"){const short=j.used.filter(u=>{const p=P(u.partId);return p&&p.stock<u.qty});
+  if(!j.stockApplied){if(short.length&&!confirm("Stock insuficiente de: "+short.map(u=>u.name).join(", ")+". ¿Terminar igualmente?"))return;
+   j.used.forEach(u=>{const p=P(u.partId);if(p){p.stock=Math.max(0,p.stock-u.qty);p.uses=(p.uses||0)+u.qty}});j.stockApplied=true}
+  j.status="Terminado"}
+ if(method){j.paid=true;j.method=method;j.paidDate=ymd(new Date());if(!j.receiptNo)j.receiptNo=receiptNo()}
+ queueJob(j);commit();buzz();toast(method?"Cobrado ✔ "+money(jobTotals(j).total):"Trabajo terminado ✔");if(S.set.sb.url&&navigator.onLine)flush().then(render).catch(()=>{})}
+function act(a,t){const id=t.dataset.id,j=J(id);
+ switch(a){
+ case"undo":if(undoFn){const f=undoFn;undoFn=null;f();$("#toast").classList.remove("on")}break;
+ case"tab":view={tab:t.dataset.t};render();break;
+ case"sec":view={tab:"adv",sec:t.dataset.s};render();break;
+ case"advback":view={tab:"adv"};render();break;
+ case"openjob":view={tab:"jobs",id};render();break;
+ case"newjobview":view={tab:"jobs",sub:"new",nq:""};render();break;
+ case"jobsback":view={tab:"jobs"};render();break;
+ case"jf":view.f=t.dataset.f;render();break;
+ case"startjob":view={tab:"jobs",id:newJob(id).id};commit();break;
+ case"startev":{const e=S.cal.find(x=>x.id==id);if(e){const fc=e.fb&&e.fb.fbCita,wc=fc&&S.webCitas.find(c=>c.id==fc),nj=wc?jobFromCita(wc):jobFromEvent(e);nj.evId=e.id;nj.time=e.time;view={tab:"jobs",id:nj.id};commit()}break}
+ case"quickpay":if(!j.tasks.length&&!j.used.length){toast("Añade primero qué has hecho");view={tab:"jobs",id};render();return}finishJob(j,t.dataset.m);break;
+ case"mgo":view={tab:"money",m:t.dataset.m};render();break;
+ case"addbiketo":view={tab:"jobs",sub:"new",nc:id,nq:""};render();break;
+ case"createjob":{let cl=view.nc&&C(view.nc);if(!cl){const n=val("nj_name");if(!n){toast("Escribe el nombre del cliente");return}cl={id:uid(),name:n,phone:val("nj_phone"),email:"",notes:""};S.clients.push(cl)}
+  const b=newBike(cl.id,{type:$("#nj_type").value,brand:val("nj_brand")});view={tab:"jobs",id:newJob(b.id).id};commit();break}
+ case"newjobbike":view={tab:"jobs",id:newJob(id).id};commit();break;
+ case"qty":{const arr=t.dataset.w=="t"?j.tasks:j.used,it=arr[+t.dataset.i];it.qty+=+t.dataset.d;if(it.qty<=0)arr.splice(+t.dataset.i,1);commit();break}
+ case"addlab":{const l=S.labor.find(x=>x.id==t.dataset.l),ex=j.tasks.find(x=>x.name==l.name);ex?ex.qty++:j.tasks.push({name:l.name,price:l.price,min:l.min,qty:1});commit();buzz();break}
+ case"addpt":addUse(j,P(t.dataset.p));commit();buzz();break;
+ case"addfree":{if(!val("ft_name"))return;j.tasks.push({name:val("ft_name"),price:+val("ft_price")||0,min:0,qty:1});commit();break}
+ case"ttoggle":if(j.tStart){j.elapsed=(j.elapsed||0)+Date.now()-j.tStart;j.tStart=null}else j.tStart=Date.now();commit();break;
+ case"togchk":view.chk=!view.chk;render();break;
+ case"togmore":view.more=!view.more;render();break;
+ case"chk":{const x=j.check[t.dataset.k]||(j.check[t.dataset.k]={s:"n"});x.s=x.s==t.dataset.s?"n":t.dataset.s;commit();break}
+ case"pay":finishJob(j,t.dataset.m);break;
+ case"finish":finishJob(j,null);break;
+ case"reopen":j.status="Abierto";j.paid=false;j.paidDate="";j.method="";if(j.citaId)queueJob(j);commit();break;
+ case"deljob":if(confirm("¿Eliminar este trabajo?")){S.jobs=S.jobs.filter(x=>x.id!=id);view={tab:"jobs"};commit()}break;
+ case"doc":docState={t:t.dataset.t,id};showDoc();break;
+ case"closedoc":$("#doc").classList.add("hide");break;
+ case"printdoc":window.print();break;
+ case"copydoc":copy(docState.text);break;
+ case"wadoc":window.open("https://wa.me/"+(docState.phone?"34"+normPhone(docState.phone):"")+"?text="+encodeURIComponent(docState.text),"_blank","noopener");break;
+ case"clientsback":view={tab:"clients"};render();break;
+ case"togclient":view.addc=!view.addc;render();break;
+ case"newclient":if(!val("nc_name")){toast("Escribe el nombre");return}S.clients.push({id:uid(),name:val("nc_name"),phone:val("nc_phone"),email:val("nc_email"),notes:""});view.addc=false;commit();break;
+ case"openclient":view={tab:"clients",id};render();break;
+ case"openbike":view={tab:"clients",id:view.id,bike:id};render();break;
+ case"bikeback":view={tab:"clients",id:B(view.bike).clientId};render();break;
+ case"delclient":if(confirm("¿Eliminar cliente, sus bicis y sus trabajos?")){const bs=S.bikes.filter(b=>b.clientId==id).map(b=>b.id);S.jobs=S.jobs.filter(x=>!bs.includes(x.bikeId));S.bikes=S.bikes.filter(b=>b.clientId!=id);S.clients=S.clients.filter(c=>c.id!=id);view={tab:"clients"};commit()}break;
+ case"delbike":if(confirm("¿Eliminar bici y sus trabajos?")){const c=B(id).clientId;S.jobs=S.jobs.filter(x=>x.bikeId!=id);S.bikes=S.bikes.filter(b=>b.id!=id);view={tab:"clients",id:c};commit()}break;
+ case"togaddp":view.addp=!view.addp;render();break;
+ case"slow":view.low=t.dataset.v=="1";render();break;
+ case"addprt":if(!val("np_name")){toast("Escribe el nombre de la pieza");return}S.parts.push({id:uid(),name:val("np_name"),price:+val("np_price")||0,cost:0,stock:+val("np_stock")||0,min:1,uses:0});view.addp=false;commit();break;
+ case"quickpart":{const p={id:uid(),name:t.dataset.n,price:0,cost:0,stock:1,min:1,uses:0};S.parts.push(p);view.sq="";view.pexp=p.id;commit();buzz();toast("Creada «"+p.name+"» con 1 en stock · pon el precio abajo");break}
+ case"use":{const p=P(id);if(p.stock<=0){toast("Ya no quedan «"+p.name+"»");return}p.stock--;p.uses=(p.uses||0)+1;persist();render();buzz();toast(`−1 ${p.name} · quedan ${p.stock}`,()=>{p.stock++;p.uses--;persist();render()});break}
+ case"stk":{const p=P(id);p.stock=Math.max(0,p.stock+ +t.dataset.d);persist();render();buzz();toast(`+1 ${p.name} · hay ${p.stock}`,()=>{p.stock--;persist();render()});break}
+ case"pexp":view.pexp=view.pexp==id?null:id;render();break;
+ case"delprt":if(confirm("¿Borrar esta pieza?")){S.parts=S.parts.filter(p=>p.id!=id);view.pexp=null;commit()}break;
+ case"recvview":view={tab:"stock",recv:true};render();break;
+ case"recvback":view={tab:"stock"};render();break;
+ case"rq":{const r=view.rl[id];r.q=Math.max(1,r.q+ +t.dataset.d);render();break}
+ case"recvok":{let tot=0,n=0;Object.entries(view.rl).forEach(([pid,r])=>{const p=P(pid);if(!p)return;p.stock+=r.q;if(r.c>0)p.cost=r.c;tot+=r.q*r.c;n+=r.q});
+  const sup=val("rv_s");if(tot>0)S.expenses.push({id:uid(),date:ymd(new Date()),concept:sup?"Pedido "+sup:"Pedido de piezas",amount:r2(tot),cat:"Piezas"});
+  view={tab:"stock"};commit();buzz();toast(`+${n} piezas${tot>0?" · gasto "+money(tot):""}`);break}
+ case"copybuy":copy("Lista de compra "+S.set.name+":\n"+S.parts.filter(p=>p.stock<=p.min).map(p=>`- ${p.name}: ${Math.max(1,p.min*2-p.stock)} uds`).join("\n"));break;
+ case"mm":view.m=mshift(view.m||ymd(new Date()).slice(0,7),+t.dataset.d);render();break;
+ case"catsel":view.cat=t.dataset.k;render();break;
+ case"exptpl":{const a=+t.dataset.a;if(a>0)addExpense(t.dataset.c,a,t.dataset.k);else{view={tab:"money",m:view.m,cat:t.dataset.k,exc:t.dataset.c,exa:""};render();const e=$("#ex_a");e&&e.focus&&e.focus()}break}
+ case"fxtpl":view.fxc=t.dataset.c;view.fxk=t.dataset.k;render();break;
+ case"addexp":{const a=+val("ex_a");if(!(a>0)){toast("Indica el importe");return}const cat=view.cat||"Piezas",ph=view.expPhoto;view.exc="";view.exa="";view.expPhoto="";addExpense(val("ex_c")||cat,a,cat,ph);break}
+ case"delexp":S.expenses=S.expenses.filter(e=>e.id!=id);commit();break;
+ case"addfx":{const a=+val("fx_a");if(!val("fx_c")||!(a>0)){toast("Concepto e importe");return}S.fixed.push({id:uid(),concept:val("fx_c"),amount:a,cat:view.fxk||"Otros",from:view.m||ymd(new Date()).slice(0,7)});view.fxc="";view.fxk="";commit();break}
+ case"delfx":S.fixed=S.fixed.filter(f=>f.id!=id);commit();break;
+ case"copymonth":copy(buildMonth(id).text);break;
+ case"csvmonth":{const s=mstats(id);download("resumen-"+id+".csv",csv([["Tipo","Fecha","Concepto","Categoría / método","Importe"]].concat(s.inc.map(x=>["Ingreso",x.paidDate,x.receiptNo,x.method,r2(jobTotals(x).total)]),s.ex.map(e=>["Gasto",e.date,e.concept,e.cat,e.amount]),s.fx.map(f=>["Gasto fijo",id,f.concept,f.cat,f.amount]))));break}
+ case"addlab2":if(!val("nl_name"))return;S.labor.push({id:uid(),name:val("nl_name"),price:+val("nl_price")||0,min:+val("nl_min")||0});commit();break;
+ case"dellab":S.labor=S.labor.filter(p=>p.id!=id);commit();break;
+ case"csvjobs":download("trabajos.csv",csv([["Fecha","Cliente","Bici","Título","Estado","Total","IVA","Pagado","Método","Fecha pago","Recibo","Horas"]].concat(S.jobs.map(x=>{const b=B(x.bikeId),T=jobTotals(x);return[x.date,(C(b&&b.clientId)||{}).name,bikeLabel(b),x.title,x.status,r2(T.total),r2(T.iva),x.paid?"sí":"no",x.method,x.paidDate,x.receiptNo,(elapsedMs(x)/36e5).toFixed(2)]}))));break;
+ case"csvexp":download("gastos.csv",csv([["Fecha","Concepto","Categoría","Importe"]].concat(S.expenses.map(e=>[e.date,e.concept,e.cat,e.amount]),S.fixed.map(f=>["(mensual desde "+f.from+")",f.concept,f.cat,f.amount]))));break;
+ case"csvinv":download("inventario.csv",csv([["Pieza","PVP","Coste","Stock","Mínimo"]].concat(S.parts.map(p=>[p.name,p.price,p.cost,p.stock,p.min]))));break;
+ case"backup":S.lastBackup=Date.now();persist();download("furgobici-taller-"+ymd(new Date())+".json",JSON.stringify(S),"application/json");render();break;
+ case"calcreset":S.set.calc[t.dataset.p]=CALC0()[t.dataset.p];commit();break;
+ case"addtq":{const mn=+val("tq_a"),mx=+val("tq_z")||mn;if(!val("tq_c")||!mn)return;S.torque.push({id:uid(),comp:val("tq_c"),brand:val("tq_b"),min:mn,max:mx});commit();break}
+ case"deltq":S.torque=S.torque.filter(x=>x.id!=id);commit();break;
+ case"websync":(async()=>{toast("Sincronizando…");await autoSync(true);render()})();break;
+ case"cita2job":{const c=S.webCitas.find(x=>String(x.id)==id);if(c){view={tab:"jobs",id:jobFromCita(c).id};commit()}break}
+ case"pubpass":(async()=>{setMsg("pubmsg","Publicando…");try{await publishPass(id);S.outbox=S.outbox.filter(o=>!(o.k=="pass"&&o.bikeId==id));persist();docState={t:"qr",id};showDoc()}catch(e){setMsg("pubmsg","No se pudo publicar: "+e.message,"err")}})();break;
+ case"pubzones":(async()=>{setMsg("zmsg","Publicando…");try{await api("/rest/v1/zonas?dow=gte.0",{method:"DELETE",prefer:"return=minimal"});
+   if(S.zones.length)await api("/rest/v1/zonas",{method:"POST",body:S.zones.map(z=>{const[d,...q]=z.split("|");return{dow:+d,town:q.join("|")}}),prefer:"return=minimal"});setMsg("zmsg","Zonas publicadas ✔","ok")}catch(e){setMsg("zmsg","Error: "+e.message,"err")}})();break;
+ }}
+function chg(k,el){const d=el.dataset,id=d.id,j=J(id);
+ switch(k){
+ case"jq":case"cq":view.q=el.value;render();break;
+ case"nq":view.nq=el.value;render();break;
+ case"sq":view.sq=el.value;render();break;
+ case"mb":view.mb=el.value;render();break;
+ case"jf":{let v=el.value;if(d.f=="disc")v=+v||0;j[d.f]=v;commit();break}
+ case"addany":{const[w,pid]=el.value.split(":");if(w=="l"){const l=S.labor.find(x=>x.id==pid),ex=j.tasks.find(x=>x.name==l.name);ex?ex.qty++:j.tasks.push({name:l.name,price:l.price,min:l.min,qty:1})}else if(w=="p")addUse(j,P(pid));commit();break}
+ case"chknote":(j.check[d.k]||(j.check[d.k]={s:"n"})).note=el.value;persist();break;
+ case"chkphoto":compress(el.files[0]).then(p=>{if(p){(j.check[d.k]||(j.check[d.k]={s:"n"})).photo=p;commit()}});break;
+ case"cf":C(id)[d.f]=el.value;persist();break;
+ case"bf":B(id)[d.f]=el.type=="checkbox"?el.checked:d.n?+el.value||0:el.value;commit();break;
+ case"bphoto":compress(el.files[0]).then(p=>{if(p){B(id).photo=p;commit()}});break;
+ case"blast":{const b=B(id);b.last=b.last||{};if(el.value)b.last[d.k]=el.value;else delete b.last[d.k];commit();break}
+ case"stk":{const p=P(id);p.stock=Math.max(0,Math.round(+el.value)||0);commit();break}
+ case"pf":{const p=P(id);p[d.f]=+el.value||0;commit();break}
+ case"rc":view.rl[id].c=+el.value||0;render();break;
+ case"raddp":if(el.value){view.rl[el.value]={q:1,c:P(el.value).cost||0};render()}break;
+ case"exphoto":compress(el.files[0]).then(p=>{view.expPhoto=p;render()});break;
+ case"autojobs":S.set.autoJobs=el.checked;persist();break;
+ case"lf":{const p=S.labor.find(x=>x.id==id);p[d.f]=d.f=="name"?el.value:+el.value||0;commit();break}
+ case"life":S.set.life[d.k][d.f]=d.f=="kw"?el.value:+el.value||0;commit();break;
+ case"cond":if(d.g=="ebike")S.set.cond.ebike=+el.value||1;else S.set.cond[d.g][d.k]=+el.value||1;persist();break;
+ case"sf":S.set[d.f]=["iva","target"].includes(d.f)?+el.value||0:el.value;commit();break;
+ case"sbf":S.set.sb[d.f]=el.value.trim();if(d.f!="site"){tok="";S.set.sb.rt=""}persist();break;
+ case"zone":{const s=new Set(S.zones);el.checked?s.add(d.k):s.delete(d.k);S.zones=[...s];persist();break}
+ case"cc":{const[g,f]=d.p.split(".");S.set.calc[g][f]=el.type=="checkbox"?el.checked:(el.type=="number"||d.t=="n")?+el.value:el.value;persist();runCalc();break}
+ case"restore":{const f=el.files[0];if(!f)return;f.text().then(t=>{try{const o=JSON.parse(t);if(!o.jobs||!o.clients)throw 0;if(confirm("Se reemplazarán los datos actuales. ¿Continuar?")){S=migrate(o);commit()}}catch(e){alert("Archivo no válido")}});break}
+ }}
+document.addEventListener("click",e=>{const t=e.target.closest("[data-act]");if(t){if(t.tagName=="A")e.preventDefault();act(t.dataset.act,t)}});
+document.addEventListener("change",e=>{const t=e.target.closest("[data-chg]");if(t)chg(t.dataset.chg,t)});
+setInterval(()=>{const j=view.id&&view.tab=="jobs"&&J(view.id);if(j&&j.tStart&&$("#tmr"))$("#tmr").textContent=hms(elapsedMs(j))},1000);
+const bg=()=>{if(S&&S.set.sb.url&&view.tab!="adv")autoSync(false)};
+window.addEventListener("online",bg);document.addEventListener("visibilitychange",()=>{if(!document.hidden)bg()});setInterval(bg,5*60*1000);
+
+(async()=>{S=migrate((await load())||seed());navigator.storage?.persist?.();persist();render();bg();
+ if("serviceWorker"in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("taller-sw.js").catch(()=>{})})();
+</script></body></html>
